@@ -1,16 +1,19 @@
+var NOTE_SIZE = 5;
+
 var score = {
     duration: 1.0,
     notes: [
-        {time: 0.0},
-        {time: 0.4},
-        {time: 0.55},
-        {time: 0.7}
+        {time: 0.0, type: 0},
+        {time: 0.25, type: 0},
+        {time: 0.5, type: 0},
+        {time: 0.75, type: 0}
     ]}
 var numberOfLines;
 var canvas;
 var context;
 var startTime;
 var looping = false;
+var selectedNote;
 
 function onLoad()
 {
@@ -21,6 +24,9 @@ function onLoad()
     stopButton = document.getElementById("stopButton");
     stopButton.addEventListener("click", stop, false);
     canvas = document.getElementById("scoreCanvas");
+    canvas.addEventListener("mousedown", mouseDown, false);
+    canvas.addEventListener("mousemove", mouseMove, false);
+    canvas.addEventListener("mouseup", mouseUp, false);
     context = scoreCanvas.getContext("2d");
     numberOfLines = 3;
     window.requestAnimationFrame(draw);
@@ -60,6 +66,46 @@ function stop()
     looping = false;
 }
 
+function mouseDown(event)
+{
+    var x = event.clientX - canvas.offsetLeft;
+    var y = event.clientY - canvas.offsetTop;
+    selectedNote = withinNote(x, y);
+}
+
+function withinNote(x, y)
+{
+    for(var note of score.notes)
+    {
+        var a = Math.abs(x - calculateNoteX(note));
+        var b = Math.abs(y - calculateNoteY(note));
+        var distance = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+        if(distance < NOTE_SIZE)
+        {
+            return note;
+        }
+    }
+}
+
+function mouseMove(event)
+{
+    if(selectedNote != null)
+    {
+        selectedNote.time = calculateNoteTime(event.clientX -
+                                              canvas.offsetLeft);
+    }
+}
+
+function calculateNoteTime(x)
+{
+    return x * score.duration / canvas.width;
+}
+
+function mouseUp(event)
+{
+    selectedNote = null;
+}
+
 function draw()
 {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -73,15 +119,15 @@ function drawNoteLines(numberOfLines)
 {
     for(var i = 0; i < numberOfLines; i ++)
     {
-        y = calculateNoteY(i);
+        y = calculateNoteTypeY(i);
         drawLine(0, y, canvas.width, y, 1);
     }
 }
 
-function calculateNoteY(noteIndex)
+function calculateNoteTypeY(noteType)
 {
     var gapSize = canvas.height / (numberOfLines + 1);
-    return gapSize * (noteIndex + 1);
+    return gapSize * (noteType + 1);
 }
 
 function drawLine(startX, startY, endX, endY, width)
@@ -97,21 +143,37 @@ function drawNotes()
 {
     for(var note of score.notes)
     {
-        var y = calculateNoteY(0, canvas);
-        var x = (note.time / score.duration) * canvas.width;
-        drawNote(x, y)
+        drawNote(note);
     }
 }
 
-function drawNote(x, y)
+function drawNote(note)
 {
-    drawCircle(x, y);
+    var x = calculateNoteX(note);
+    var y = calculateNoteY(note);
+    var previousFillStyle = context.fillStyle;
+    if(selectedNote == note)
+    {
+        context.fillStyle = "rgb(255, 0, 0)";
+    }
+    drawCircle(x, y, NOTE_SIZE);
+    context.fillStyle = previousFillStyle;
 }
 
-function drawCircle(x, y)
+function calculateNoteX(note)
+{
+    return (note.time / score.duration) * canvas.width;
+}
+
+function calculateNoteY(note)
+{
+    return calculateNoteTypeY(note.type);
+}
+
+function drawCircle(x, y, r)
 {
     context.beginPath();
-    context.arc(x, y, 5, 0, 2 * Math.PI);
+    context.arc(x, y, r, 0, 2 * Math.PI);
     context.fill();
 }
 
