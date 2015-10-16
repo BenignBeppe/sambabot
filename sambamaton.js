@@ -10,13 +10,16 @@ var numberOfLines;
 var canvas;
 var context;
 var startTime;
+var looping = false;
 
 function onLoad()
 {
     playButton = document.getElementById("playButton");
     playButton.addEventListener("click", play, false);
     loopButton = document.getElementById("loopButton");
-    loopButton.addEventListener("click", playLooped, false);
+    loopButton.addEventListener("click", startPlayingLooped, false);
+    stopButton = document.getElementById("stopButton");
+    stopButton.addEventListener("click", stop, false);
     canvas = document.getElementById("scoreCanvas");
     context = scoreCanvas.getContext("2d");
     numberOfLines = 3;
@@ -37,10 +40,24 @@ function click(audio)
     audio.play();
 }
 
-function playLooped()
+function startPlayingLooped()
 {
-    play();
-    setTimeout(playLooped, score.duration * 1000);
+    looping = true;
+    playLoop();
+}
+
+function playLoop()
+{
+    if(looping)
+    {
+        play();
+        setTimeout(playLoop, score.duration * 1000);
+    }
+}
+
+function stop()
+{
+    looping = false;
 }
 
 function draw()
