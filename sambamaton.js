@@ -29,6 +29,7 @@ function onLoad()
     canvas.addEventListener("mouseup", mouseUp, false);
     context = scoreCanvas.getContext("2d");
     numberOfLines = 3;
+    updateJson();
     window.requestAnimationFrame(draw);
 }
 
@@ -93,12 +94,19 @@ function mouseMove(event)
     {
         selectedNote.time = calculateNoteTime(event.clientX -
                                               canvas.offsetLeft);
+        updateJson();
     }
 }
 
 function calculateNoteTime(x)
 {
     return x * score.duration / canvas.width;
+}
+
+function updateJson()
+{
+    var jsonRepresentation = document.getElementById("jsonRepresentation");
+    jsonRepresentation.value = JSON.stringify(score, null, 4);
 }
 
 function mouseUp(event)
