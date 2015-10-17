@@ -195,6 +195,10 @@ function mouseMove(event)
         selectedNote.time = calculateNoteTime(x);
         updateJson();
     }
+    else
+    {
+        highlightedNote = withinNote(x, y);
+    }
 }
 
 function calculateNoteTime(x)
@@ -228,7 +232,6 @@ function updateJson()
 function mouseUp(event)
 {
     selectedNote = null;
-    highlightedNote = null;
 }
 
 function draw()
@@ -307,12 +310,19 @@ function drawNote(note)
 {
     var x = calculateNoteX(note);
     var y = calculateNoteY(note);
+    var previousStrokeStyle = context.strokeStyle;
     var previousFillStyle = context.fillStyle;
-    if(highlightedNote == note)
+    if(selectedNote == note)
     {
         context.fillStyle = "rgb(255, 0, 0)";
     }
-    drawCircle(x, y, NOTE_SIZE);
+    if(highlightedNote == note)
+    {
+        context.strokeStyle = "rgb(255, 0, 0)";
+        strokeCircle(x, y, NOTE_SIZE, 3);
+    }
+    fillCircle(x, y, NOTE_SIZE);
+    context.strokeStyle = previousStrokeStyle;
     context.fillStyle = previousFillStyle;
 }
 
@@ -327,11 +337,19 @@ function calculateNoteY(note)
     return calculateNoteTypeY(note.type);
 }
 
-function drawCircle(x, y, r)
+function fillCircle(x, y, r)
 {
     context.beginPath();
     context.arc(x, y, r, 0, 2 * Math.PI);
     context.fill();
+}
+
+function strokeCircle(x, y, r, width)
+{
+    context.beginPath();
+    context.arc(x, y, r, 0, 2 * Math.PI);
+    context.lineWidth = width;
+    context.stroke();
 }
 
 function drawTimeMarker()
