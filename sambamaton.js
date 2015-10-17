@@ -1,4 +1,7 @@
 var NOTE_SIZE = 5;
+var CLOSE_DISTANCE = 20;
+var ADD_NOTE = "ADD_NOTE";
+var REMOVE_NOTE = "REMOVE_NOTE";
 
 var score = {
     duration: 1.0,
@@ -18,15 +21,17 @@ var context;
 var startTime;
 var looping = false;
 var selectedNote;
+var highlightedNote;
+var highlightedNoteLine;
+var mode;
 
 function onLoad()
 {
-    playButton = document.getElementById("playButton");
-    playButton.addEventListener("click", play, false);
-    loopButton = document.getElementById("loopButton");
-    loopButton.addEventListener("click", startPlayingLooped, false);
-    stopButton = document.getElementById("stopButton");
-    stopButton.addEventListener("click", stop, false);
+    addOnClickListener("addButton", enterAddNoteMode);
+    addOnClickListener("removeButton", enterRemoveNoteMode);
+    addOnClickListener("playButton", play);
+    addOnClickListener("loopButton", startPlayingLooped);
+    addOnClickListener("stopButton", stop);
     canvas = document.getElementById("scoreCanvas");
     canvas.addEventListener("mousedown", mouseDown, false);
     canvas.addEventListener("mousemove", mouseMove, false);
@@ -34,6 +39,22 @@ function onLoad()
     context = scoreCanvas.getContext("2d");
     updateJson();
     window.requestAnimationFrame(draw);
+}
+
+function addOnClickListener(elementId, listenerFunction)
+{
+    var element = document.getElementById(elementId);
+    element.addEventListener("click", listenerFunction, false);
+}
+
+function enterAddNoteMode()
+{
+    mode = ADD_NOTE;
+}
+
+function enterRemoveNoteMode()
+{
+    mode = REMOVE_NOTE;
 }
 
 function play()
@@ -73,9 +94,60 @@ function stop()
 
 function mouseDown(event)
 {
-    var x = event.clientX - canvas.offsetLeft;
-    var y = event.clientY - canvas.offsetTop;
-    selectedNote = withinNote(x, y);
+    if(mode == ADD_NOTE)
+    {
+        if(highlightedNoteLine == null)
+        {
+            mode = null;
+        }
+        else
+        {
+            addNote(xInCanvas(event.clientX));
+        }
+    }
+    else if(mode == REMOVE_NOTE)
+    {
+        if(highlightedNote == null)
+        {
+            mode = null;
+        }
+        else
+        {
+            removeNote(highlightedNote);
+        }
+    }
+    else
+    {
+        var x = xInCanvas(event.clientX);
+        var y = yInCanvas(event.clientY);
+        selectedNote = withinNote(x, y);
+        highlightedNote = selectedNote;
+    }
+}
+
+function xInCanvas(rawX)
+{
+    return rawX - canvas.offsetLeft;
+}
+
+function yInCanvas(rawY)
+{
+    return rawY - canvas.offsetTop;
+}
+
+function addNote(x)
+{
+    var time = calculateNoteTime(x);
+    var note = {time: time, type: highlightedNoteLine};
+    score.notes.push(note);
+    updateJson();
+}
+
+function removeNote(note)
+{
+    var index = score.notes.indexOf(note);
+    score.notes.splice(index, 1);
+    updateJson();
 }
 
 function withinNote(x, y)
@@ -94,10 +166,19 @@ function withinNote(x, y)
 
 function mouseMove(event)
 {
-    if(selectedNote != null)
+    var y = yInCanvas(event.clientY);
+    var x = xInCanvas(event.clientX);
+    if(mode == ADD_NOTE)
     {
-        selectedNote.time = calculateNoteTime(event.clientX -
-                                              canvas.offsetLeft);
+        highlightedNoteLine = closeToNoteLine(y);
+    }
+    else if(mode == REMOVE_NOTE)
+    {
+        highlightedNote = withinNote(x, y);
+    }
+    else if(selectedNote != null)
+    {
+        selectedNote.time = calculateNoteTime(x);
         updateJson();
     }
 }
@@ -105,6 +186,23 @@ function mouseMove(event)
 function calculateNoteTime(x)
 {
     return x * score.duration / canvas.width;
+}
+
+function closeToNoteLine(y)
+{
+    var closestNoteLine;
+    var closestDistance;
+    for(var i = 0; i < Object.keys(score.noteTypes).length; i ++)
+    {
+        var noteLineY = calculateNoteTypeY(i);
+        var distance = Math.abs(noteLineY - y);
+        if(distance < CLOSE_DISTANCE)
+        {
+            closestNoteLine = i;
+            closestDistance = distance;
+        }
+    }
+    return closestNoteLine;
 }
 
 function updateJson()
@@ -116,12 +214,13 @@ function updateJson()
 function mouseUp(event)
 {
     selectedNote = null;
+    highlightedNote = null;
 }
 
 function draw()
 {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    drawNoteLines(3);
+    drawNoteLines();
     drawNotes();
     drawTimeMarker();
     window.requestAnimationFrame(draw);
@@ -131,9 +230,20 @@ function drawNoteLines()
 {
     for(var i = 0; i < numberOfNoteTypes(); i ++)
     {
-        y = calculateNoteTypeY(i);
-        drawLine(0, y, canvas.width, y, 1);
+        drawNoteLine(i);
     }
+}
+
+function drawNoteLine(index)
+{
+    var previousStrokeStyle = context.strokeStyle;
+    y = calculateNoteTypeY(index);
+    if(highlightedNoteLine == index)
+    {
+        context.strokeStyle = "rgb(255, 0, 0)";
+    }
+    drawLine(0, y, canvas.width, y, 1);
+    context.strokeStyle = previousStrokeStyle;
 }
 
 function numberOfNoteTypes()
@@ -169,7 +279,7 @@ function drawNote(note)
     var x = calculateNoteX(note);
     var y = calculateNoteY(note);
     var previousFillStyle = context.fillStyle;
-    if(selectedNote == note)
+    if(highlightedNote == note)
     {
         context.fillStyle = "rgb(255, 0, 0)";
     }
