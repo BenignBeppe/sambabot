@@ -39,6 +39,7 @@ function onLoad()
     addClickListener("stopButton", stop);
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
+    bpmInput.value = score.bpm;
     canvas = document.getElementById("scoreCanvas");
     canvas.addEventListener("mousedown", mouseDown, false);
     canvas.addEventListener("mousemove", mouseMove, false);
@@ -101,7 +102,7 @@ function stop()
 
 function updateBpm(event)
 {
-    score.bpm = event.target.value;
+    score.bpm = parseFloat(event.target.value);
     updateJson();
 }
 
@@ -198,7 +199,7 @@ function mouseMove(event)
 
 function calculateNoteTime(x)
 {
-    return x * calculateDuration() / canvas.width;
+    return (x / canvas.width) * score.beats;
 }
 
 function closeToNoteLine(y)
