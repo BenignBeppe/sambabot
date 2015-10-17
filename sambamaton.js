@@ -2,13 +2,17 @@ var NOTE_SIZE = 5;
 
 var score = {
     duration: 1.0,
+    noteTypes: {
+        0: "sounds/repinique-head.ogg",
+        1: "sounds/repinique-rimshot.ogg",
+        2: "sounds/repinique-hand.ogg"
+    },
     notes: [
         {time: 0.0, type: 0},
-        {time: 0.25, type: 0},
-        {time: 0.5, type: 0},
-        {time: 0.75, type: 0}
+        {time: 0.25, type: 1},
+        {time: 0.5, type: 1},
+        {time: 0.75, type: 2}
     ]}
-var numberOfLines;
 var canvas;
 var context;
 var startTime;
@@ -28,7 +32,6 @@ function onLoad()
     canvas.addEventListener("mousemove", mouseMove, false);
     canvas.addEventListener("mouseup", mouseUp, false);
     context = scoreCanvas.getContext("2d");
-    numberOfLines = 3;
     updateJson();
     window.requestAnimationFrame(draw);
 }
@@ -38,11 +41,12 @@ function play()
     startTime = Date.now();
     for(var note of score.notes)
     {
-        setTimeout(click, note.time * 1000, new Audio("click.ogg"));
+        var sound = new Audio(score.noteTypes[note.type]);
+        setTimeout(playSound, note.time * 1000, sound);
     }
 }
 
-function click(audio)
+function playSound(audio)
 {
     audio.play();
 }
@@ -123,18 +127,23 @@ function draw()
     window.requestAnimationFrame(draw);
 }
 
-function drawNoteLines(numberOfLines)
+function drawNoteLines()
 {
-    for(var i = 0; i < numberOfLines; i ++)
+    for(var i = 0; i < numberOfNoteTypes(); i ++)
     {
         y = calculateNoteTypeY(i);
         drawLine(0, y, canvas.width, y, 1);
     }
 }
 
+function numberOfNoteTypes()
+{
+    return Object.keys(score.noteTypes).length
+}
+
 function calculateNoteTypeY(noteType)
 {
-    var gapSize = canvas.height / (numberOfLines + 1);
+    var gapSize = canvas.height / (numberOfNoteTypes() + 1);
     return gapSize * (noteType + 1);
 }
 
