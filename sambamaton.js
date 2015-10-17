@@ -4,7 +4,8 @@ var ADD_NOTE = "ADD_NOTE";
 var REMOVE_NOTE = "REMOVE_NOTE";
 
 var score = {
-    duration: 1.0,
+    beats: 4,
+    bpm: 80,
     noteTypes: {
         0: "sounds/repinique-head.ogg",
         1: "sounds/repinique-rimshot.ogg",
@@ -14,7 +15,11 @@ var score = {
         {time: 0.0, type: 0},
         {time: 0.25, type: 1},
         {time: 0.5, type: 1},
-        {time: 0.75, type: 2}
+        {time: 0.75, type: 2},
+        {time: 1.0, type: 0},
+        {time: 1.25, type: 1},
+        {time: 1.5, type: 1},
+        {time: 1.75, type: 2}
     ]}
 var canvas;
 var context;
@@ -27,11 +32,13 @@ var mode;
 
 function onLoad()
 {
-    addOnClickListener("addButton", enterAddNoteMode);
-    addOnClickListener("removeButton", enterRemoveNoteMode);
-    addOnClickListener("playButton", play);
-    addOnClickListener("loopButton", startPlayingLooped);
-    addOnClickListener("stopButton", stop);
+    addClickListener("addButton", enterAddNoteMode);
+    addClickListener("removeButton", enterRemoveNoteMode);
+    addClickListener("playButton", play);
+    addClickListener("loopButton", startPlayingLooped);
+    addClickListener("stopButton", stop);
+    var bpmInput = document.getElementById("bpmInput");
+    bpmInput.addEventListener("input", updateBpm, false);
     canvas = document.getElementById("scoreCanvas");
     canvas.addEventListener("mousedown", mouseDown, false);
     canvas.addEventListener("mousemove", mouseMove, false);
@@ -41,7 +48,7 @@ function onLoad()
     window.requestAnimationFrame(draw);
 }
 
-function addOnClickListener(elementId, listenerFunction)
+function addClickListener(elementId, listenerFunction)
 {
     var element = document.getElementById(elementId);
     element.addEventListener("click", listenerFunction, false);
@@ -63,7 +70,7 @@ function play()
     for(var note of score.notes)
     {
         var sound = new Audio(score.noteTypes[note.type]);
-        setTimeout(playSound, note.time * 1000, sound);
+        setTimeout(playSound, (note.time / score.bpm * 60) * 1000, sound);
     }
 }
 
@@ -83,13 +90,19 @@ function playLoop()
     if(looping)
     {
         play();
-        setTimeout(playLoop, score.duration * 1000);
+        setTimeout(playLoop, calculateDuration() * 1000);
     }
 }
 
 function stop()
 {
     looping = false;
+}
+
+function updateBpm(event)
+{
+    score.bpm = event.target.value;
+    updateJson();
 }
 
 function mouseDown(event)
@@ -185,7 +198,7 @@ function mouseMove(event)
 
 function calculateNoteTime(x)
 {
-    return x * score.duration / canvas.width;
+    return x * calculateDuration() / canvas.width;
 }
 
 function closeToNoteLine(y)
@@ -221,6 +234,7 @@ function draw()
 {
     context.clearRect(0, 0, canvas.width, canvas.height);
     drawNoteLines();
+    drawBeatLines();
     drawNotes();
     drawTimeMarker();
     window.requestAnimationFrame(draw);
@@ -266,6 +280,20 @@ function drawLine(startX, startY, endX, endY, width)
     context.stroke();
 }
 
+function drawBeatLines()
+{
+    for(var i = 1; i < score.beats; i ++)
+    {
+        drawBeatLine(i);
+    }
+}
+
+function drawBeatLine(index)
+{
+    var x = (canvas.width / (score.beats / index));
+    drawLine(x, 0, x, canvas.height, 1);
+}
+
 function drawNotes()
 {
     for(var note of score.notes)
@@ -289,7 +317,8 @@ function drawNote(note)
 
 function calculateNoteX(note)
 {
-    return (note.time / score.duration) * canvas.width;
+    var x = note.time / score.beats * canvas.width;
+    return x;
 }
 
 function calculateNoteY(note)
@@ -307,7 +336,12 @@ function drawCircle(x, y, r)
 function drawTimeMarker()
 {
     var time = Date.now();
-    var timeMarkerX = (((time - startTime) / 1000.0) / score.duration) *
+    var x = (((time - startTime) / 1000.0) / calculateDuration()) *
         canvas.width;
-    drawLine(timeMarkerX, 0, timeMarkerX, canvas.height, 2);
+    drawLine(x, 0, x, canvas.height, 2);
+}
+
+function calculateDuration()
+{
+    return score.beats / score.bpm * 60;
 }
