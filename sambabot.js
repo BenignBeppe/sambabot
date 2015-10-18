@@ -118,7 +118,6 @@ function enterRemoveNoteMode()
 function record()
 {
     mode = RECORD;
-    // startTime = Date.now();
     play();
 }
 
