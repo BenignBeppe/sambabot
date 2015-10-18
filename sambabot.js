@@ -38,6 +38,7 @@ function onLoad()
 {
     initSoundLoop();
     updateSounds();
+    loadScoreFromUrl();
     canvas = document.getElementById("scoreCanvas");
     canvas.addEventListener("mousedown", mouseDown, false);
     canvas.addEventListener("mousemove", mouseMove, false);
@@ -65,6 +66,46 @@ function initSoundLoop()
     soundLoop = new Worker("sound-loop.js");
     soundLoop.onmessage = onSoundLoopMessage;
     updateScoreInSoundLoop();
+}
+
+function updateSounds()
+{
+    sounds = [];
+    for(var i = 0; i < score.notes.length; i ++)
+    {
+        var note = score.notes[i];
+        var sound = new Audio(score.noteTypes[note.type]);
+        sounds.push(sound);
+    }
+}
+
+function loadScoreFromUrl()
+{
+    var scoreName = getSearchParameter("score");
+    var scorePath = "scores/" + scoreName + ".json";
+    console.log("scorePath =", scorePath);
+    var request = new XMLHttpRequest();
+    request.open("GET", scorePath);
+    request.onreadystatechange = function() {
+        var scoreJson = request.response;
+        jsonRepresentation.value = scoreJson;
+        loadJson();
+    };
+    request.send();
+}
+
+function getSearchParameter(parameterName)
+{
+    var parameters = location.search.substring(1).split("&");
+    console.log("parameters =", parameters);
+    for(var parameter of parameters)
+    {
+        var keyAndValue = parameter.split("=");
+        if(keyAndValue[0] == parameterName)
+        {
+            return keyAndValue[1];
+        }
+    }
 }
 
 function updateScoreInSoundLoop()
@@ -300,17 +341,6 @@ function loadJson()
     updateScoreInSoundLoop();
     updateSounds();
     bpmInput.value = score.bpm;
-}
-
-function updateSounds()
-{
-    sounds = [];
-    for(var i = 0; i < score.notes.length; i ++)
-    {
-        var note = score.notes[i];
-        var sound = new Audio(score.noteTypes[note.type]);
-        sounds.push(sound);
-    }
 }
 
 function mouseUp(event)
