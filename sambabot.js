@@ -2,9 +2,10 @@ var NOTE_SIZE = 5;
 var CLOSE_DISTANCE = 20;
 var ADD_NOTE = "ADD_NOTE";
 var REMOVE_NOTE = "REMOVE_NOTE";
+var RECORD = "RECORD";
 
 var score = {
-    beats: 4,
+    beats: 8,
     bpm: 80,
     noteTypes: {
         0: "sounds/repinique-head.ogg",
@@ -31,6 +32,7 @@ var highlightedNoteLine;
 var mode;
 var sounds;
 var jsonRepresentation;
+var spaceDown = false;
 
 function onLoad()
 {
@@ -43,12 +45,15 @@ function onLoad()
     context = scoreCanvas.getContext("2d");
     addClickListener("addButton", enterAddNoteMode);
     addClickListener("removeButton", enterRemoveNoteMode);
+    addClickListener("recordButton", record);
     addClickListener("playButton", play);
     addClickListener("loopButton", startPlayingLooped);
     addClickListener("stopButton", stop);
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
     bpmInput.value = score.bpm;
+    addEventListener("keydown", keyDown, false);
+    addEventListener("keyup", keyUp, false);
     jsonRepresentation = document.getElementById("jsonRepresentation");
     updateJson();
     addClickListener("loadJsonButton", loadJson);
@@ -75,6 +80,14 @@ function onSoundLoopMessage(message)
     {
         playNote(content);
     }
+    else if(type == "scoreDone")
+    {
+        if(mode == RECORD)
+        {
+            updateScoreInSoundLoop();
+            mode = null;
+        }
+    }
     else
     {
         log.warn("Message of unkown type received:", message);
@@ -100,6 +113,13 @@ function enterAddNoteMode()
 function enterRemoveNoteMode()
 {
     mode = REMOVE_NOTE;
+}
+
+function record()
+{
+    mode = RECORD;
+    // startTime = Date.now();
+    play();
 }
 
 function play()
@@ -153,7 +173,8 @@ function mouseDown(event)
         }
         else
         {
-            addNote(xInCanvas(event.clientX));
+            addNote(xInCanvas(event.clientX), highlightedNoteLine);
+            updateScoreInSoundLoop();
         }
     }
     else if(mode == REMOVE_NOTE)
@@ -186,12 +207,11 @@ function yInCanvas(rawY)
     return rawY - canvas.offsetTop;
 }
 
-function addNote(x)
+function addNote(x, type)
 {
     var time = calculateNoteTime(x);
-    var note = {time: time, type: highlightedNoteLine};
+    var note = {time: time, type: type};
     score.notes.push(note);
-    updateScoreInSoundLoop();
     sounds.push(new Audio(score.noteTypes[note.type]));
     updateJson();
 }
@@ -299,6 +319,26 @@ function mouseUp(event)
     selectedNote = null;
 }
 
+function keyDown(event)
+{
+    if(mode == RECORD && event.code == "Space" && !spaceDown)
+    {
+        var time = ((Date.now() - startTime) / 1000) /
+            calculateDuration() * score.beats;
+        addNote(timeToX(time), 0);
+        spaceDown = true;
+        event.target.blur(); //TODO: Hack!
+    }
+}
+
+function keyUp(event)
+{
+    if(event.code == "Space")
+    {
+        spaceDown = false;
+    }
+}
+
 function draw()
 {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -393,7 +433,13 @@ function drawNote(note)
 
 function calculateNoteX(note)
 {
-    var x = note.time / score.beats * canvas.width;
+    var x = timeToX(note.time);
+    return x;
+}
+
+function timeToX(time)
+{
+    var x = time / score.beats * canvas.width;
     return x;
 }
 

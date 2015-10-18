@@ -1,6 +1,7 @@
 var score;
 var startTime;
 var time;
+var running;
 
 function loop()
 {
@@ -14,7 +15,15 @@ function loop()
             note.played = true;
         }
     }
-    setTimeout(loop, 10);
+    if(time >= score.beats)
+    {
+        running = false;
+        postMessageToMain("scoreDone");
+    }
+    if(running)
+    {
+        setTimeout(loop, 10);
+    }
 }
 
 function postMessageToMain(type, content)
@@ -42,8 +51,8 @@ onmessage = function(message)
         {
             note.played = false;
         }
+        running = true;
         startTime = Date.now();
-        console.log("score =", score);
         loop();
     }
     else
