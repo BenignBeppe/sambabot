@@ -22,6 +22,19 @@ var score = {
         {time: 1.5, type: 1},
         {time: 1.75, type: 2}
     ]}
+var intro = {
+    beats: 4,
+    bpm: score.bpm,
+    noteTypes: {
+        0: "sounds/repinique-rimshot.ogg",
+        1: "sounds/repinique-head.ogg"
+    },
+    notes: [
+        {time: 0, type: 0},
+        {time: 1, type: 1},
+        {time: 2, type: 1},
+        {time: 3, type: 1}
+    ]};
 var canvas;
 var context;
 var startTime;
@@ -31,6 +44,7 @@ var highlightedNote;
 var highlightedNoteLine;
 var mode;
 var sounds;
+var introSounds;
 var jsonRepresentation;
 var spaceDown = false;
 var recordKeys = {
@@ -38,6 +52,7 @@ var recordKeys = {
     "k": {"noteType": 1, "down": false},
     "f": {"noteType": 2, "down": false}
 }
+var playingIntro = false;
 
 function onLoad()
 {
@@ -116,9 +131,13 @@ function getSearchParameter(parameterName)
     }
 }
 
-function updateScoreInSoundLoop()
+function updateScoreInSoundLoop(scoreToPost)
 {
-    postMessageToSoundLoop("score", score);
+    if(scoreToPost == null)
+    {
+        scoreToPost = score;
+    }
+    postMessageToSoundLoop("score", scoreToPost);
 }
 
 function onSoundLoopMessage(message)
@@ -133,8 +152,17 @@ function onSoundLoopMessage(message)
     {
         if(mode == RECORD)
         {
-            updateScoreInSoundLoop();
-            mode = null;
+            if(playingIntro)
+            {
+                playingIntro = false;
+                updateScoreInSoundLoop();
+                play();
+            }
+            else
+            {
+                updateScoreInSoundLoop();
+                mode = null;
+            }
         }
     }
     else
@@ -167,6 +195,15 @@ function enterRemoveNoteMode()
 function record()
 {
     mode = RECORD;
+    introSounds = [];
+    for(var i = 0; i < intro.notes.length; i ++)
+    {
+        var note = intro.notes[i];
+        var sound = new Audio(intro.noteTypes[note.type]);
+        introSounds.push(sound);
+    }
+    playingIntro = true;
+    updateScoreInSoundLoop(intro);
     play();
 }
 
@@ -178,9 +215,19 @@ function play()
 
 function playNote(noteIndex)
 {
-    var note = score.notes[noteIndex];
+    var note;
+    var sound;
+    if(playingIntro)
+    {
+        note = intro.notes[noteIndex];
+        sound = introSounds[noteIndex];
+    }
+    else
+    {
+        note = score.notes[noteIndex];
+        sound = sounds[noteIndex];
+    }
     console.log("> playNote():", note.time - (Date.now() - startTime) / 1000.0);
-    var sound = sounds[noteIndex];
     sound.play();
 }
 
@@ -358,7 +405,7 @@ function mouseUp(event)
 
 function keyDown(event)
 {
-    if(mode == RECORD)
+    if(mode == RECORD && !playingIntro)
     {
         if(event.key in recordKeys && !recordKeys[event.key].down)
         {
