@@ -2,27 +2,48 @@ var score;
 var startTime;
 var time;
 var running;
+var numberOfIntroBeats = 4;
+var clickList;
 
-function loop()
+function loop(playIntro)
 {
     time = ((Date.now() - startTime) * score.bpm / 60) / 1000.0;
-    for(var i = 0; i < score.notes.length; i ++)
+    if(playIntro)
     {
-        var note = score.notes[i];
-        if(!note.played && time >= note.time)
+        if(time >= clickList[0])
         {
-            postMessageToMain("playNote", i);
-            note.played = true;
+            postMessageToMain("playClick");
+            clickList.shift();
+        }
+        if(time >= ((60 / score.bpm) * numberOfIntroBeats))
+        {
+            playScore();
+        }
+        else
+        {
+            setTimeout(loop, 10, true);
         }
     }
-    if(time >= score.beats)
+    else
     {
-        running = false;
-        postMessageToMain("scoreDone");
-    }
-    if(running)
-    {
-        setTimeout(loop, 10);
+        for(var i = 0; i < score.notes.length; i ++)
+        {
+            var note = score.notes[i];
+            if(!note.played && time >= note.time)
+            {
+                postMessageToMain("playNote", i);
+                note.played = true;
+            }
+        }
+        if(time >= score.beats)
+        {
+            running = false;
+            postMessageToMain("scoreDone");
+        }
+        else
+        {
+            setTimeout(loop, 10, playIntro);
+        }
     }
 }
 
@@ -46,17 +67,39 @@ onmessage = function(message)
     }
     else if(type == "play")
     {
-        console.log("Starting loop.");
-        for(note of score.notes)
-        {
-            note.played = false;
-        }
-        running = true;
+        playScore();
+    }
+    else if(type == "playIntro")
+    {
+        generateClickList();
         startTime = Date.now();
-        loop();
+        postMessageToMain("startTime", startTime);
+        loop(true);
     }
     else
     {
         log.warn("Message of unkown type received:", message);
     }
+}
+
+function generateClickList()
+{
+    clickList = [];
+    for(var i = 0; i < numberOfIntroBeats; i ++)
+    {
+        var clickTime = ((60 / score.bpm) * i);
+        clickList.push(clickTime);
+    }
+}
+
+function playScore()
+{
+    console.log("Starting loop.");
+    for(note of score.notes)
+    {
+        note.played = false;
+    }
+    startTime = Date.now();
+    postMessageToMain("startTime", startTime);
+    loop();
 }
