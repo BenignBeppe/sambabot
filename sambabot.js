@@ -33,6 +33,11 @@ var mode;
 var sounds;
 var jsonRepresentation;
 var spaceDown = false;
+var recordKeys = {
+    "j": {"noteType": 0, "down": false},
+    "k": {"noteType": 1, "down": false},
+    "f": {"noteType": 2, "down": false}
+}
 
 function onLoad()
 {
@@ -353,21 +358,23 @@ function mouseUp(event)
 
 function keyDown(event)
 {
-    if(mode == RECORD && event.code == "Space" && !spaceDown)
+    if(mode == RECORD)
     {
-        var time = ((Date.now() - startTime) / 1000) /
-            calculateDuration() * score.beats;
-        addNote(timeToX(time), 0);
-        spaceDown = true;
-        event.target.blur(); //TODO: Hack!
+        if(event.key in recordKeys && !recordKeys[event.key].down)
+        {
+            var time = ((Date.now() - startTime) / 1000) /
+                calculateDuration() * score.beats;
+            addNote(timeToX(time), recordKeys[event.key].noteType);
+            recordKeys[event.key].down = true;
+        }
     }
 }
 
 function keyUp(event)
 {
-    if(event.code == "Space")
+    if(event.key in recordKeys)
     {
-        spaceDown = false;
+        recordKeys[event.key].down = false;
     }
 }
 
