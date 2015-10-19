@@ -82,16 +82,19 @@ function updateSounds()
 function loadScoreFromUrl()
 {
     var scoreName = getSearchParameter("score");
-    var scorePath = "scores/" + scoreName + ".json";
-    console.log("scorePath =", scorePath);
-    var request = new XMLHttpRequest();
-    request.open("GET", scorePath);
-    request.onreadystatechange = function() {
-        var scoreJson = request.response;
-        jsonRepresentation.value = scoreJson;
-        loadJson();
-    };
-    request.send();
+    if(scoreName != null)
+    {
+        var scorePath = "scores/" + scoreName + ".json";
+        console.log("scorePath =", scorePath);
+        var request = new XMLHttpRequest();
+        request.open("GET", scorePath);
+        request.onreadystatechange = function() {
+            var scoreJson = request.response;
+            jsonRepresentation.value = scoreJson;
+            loadJson();
+        };
+        request.send();
+    }
 }
 
 function getSearchParameter(parameterName)
