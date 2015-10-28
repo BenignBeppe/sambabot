@@ -276,7 +276,10 @@ function mouseDown(event)
         {
             if(selectedNotes.indexOf(note) == -1)
             {
-                selectedNotes = [];
+                if(!event.shiftKey)
+                {
+                    selectedNotes = [];
+                }
                 selectNote(note);
             }
         }
