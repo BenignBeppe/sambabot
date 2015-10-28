@@ -44,6 +44,8 @@ var recordKeys = {
 }
 var selectionStartPoint;
 var selectionEndPoint;
+var undoHistory = [];
+var notesMoved = false;
 
 function onLoad()
 {
@@ -119,6 +121,13 @@ function loadScoreFromUrl()
         };
         request.send();
     }
+    saveUndoState();
+}
+
+function saveUndoState()
+{
+    undoHistory.push(JSON.parse(JSON.stringify(score)));
+    console.log("Saving undo state. # of states now:", undoHistory.length);
 }
 
 function getSearchParameter(parameterName)
@@ -266,7 +275,7 @@ function mouseDown(event)
         }
         else
         {
-            removeNote(highlightedNote);
+            removeNotes([highlightedNote]);
         }
     }
     else
@@ -304,6 +313,7 @@ function yInCanvas(rawY)
 
 function addNote(x, type)
 {
+    saveUndoState();
     var time = calculateNoteTime(x);
     var note = {time: time, type: type};
     score.notes.push(note);
@@ -311,12 +321,16 @@ function addNote(x, type)
     updateJson();
 }
 
-function removeNote(note)
+function removeNotes(notes)
 {
-    var index = score.notes.indexOf(note);
-    score.notes.splice(index, 1);
+    saveUndoState();
+    for(note of notes)
+    {
+        var index = score.notes.indexOf(note);
+        score.notes.splice(index, 1);
+        sounds.splice(index, 1);
+    }
     updateScoreInSoundLoop();
-    sounds.splice(index, 1);
     updateJson();
 }
 
@@ -356,6 +370,11 @@ function mouseMove(event)
     }
     else if(event.buttons == 1 && selectedNotes.length > 0)
     {
+        if(!notesMoved)
+        {
+            notesMoved = true;
+            saveUndoState();
+        }
         for(var note of selectedNotes)
         {
             moveNote(note, event.movementX);
@@ -375,8 +394,6 @@ function mouseMove(event)
 function moveNote(note, deltaX)
 {
     note.time += calculateNoteTime(deltaX);
-    updateScoreInSoundLoop();
-    updateJson();
 }
 
 function calculateNoteTime(x)
@@ -422,6 +439,12 @@ function mouseUp(event)
         selectionStartPoint = null;
         selectionEndPoint = null;
     }
+    if(notesMoved)
+    {
+        updateScoreInSoundLoop();
+        updateJson();
+        notesMoved = false;
+    }
 }
 
 function selectNodesInRectangle()
@@ -459,16 +482,27 @@ function keyDown(event)
         {
             removeSelectedNotes();
         }
+        if(event.key == "z" && event.ctrlKey)
+        {
+            undo();
+        }
     }
 }
 
 function removeSelectedNotes()
 {
-    for(note of selectedNotes)
-    {
-        removeNote(note);
-    }
+    removeNotes(selectedNotes);
     selectedNotes = [];
+}
+
+function undo()
+{
+    if(undoHistory.length > 0)
+    {
+        score = undoHistory.pop();
+        updateScoreInSoundLoop();
+        updateSounds();
+    }
 }
 
 function keyUp(event)
