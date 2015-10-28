@@ -453,6 +453,22 @@ function keyDown(event)
             recordKeys[event.key].down = true;
         }
     }
+    else
+    {
+        if(event.key == "Delete")
+        {
+            removeSelectedNotes();
+        }
+    }
+}
+
+function removeSelectedNotes()
+{
+    for(note of selectedNotes)
+    {
+        removeNote(note);
+    }
+    selectedNotes = [];
 }
 
 function keyUp(event)
