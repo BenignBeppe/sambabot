@@ -3,6 +3,9 @@ var CLOSE_DISTANCE = 20;
 var ADD_NOTE = "ADD_NOTE";
 var REMOVE_NOTE = "REMOVE_NOTE";
 var RECORD = "RECORD";
+var FPS = 30;
+var REQUEST_ANIMATION_FRAME = "REQUEST_ANIMATION_FRAME"
+var INTERVAL = "INTERVAL"
 
 var score = {
     beats: 8,
@@ -65,7 +68,19 @@ function onLoad()
     jsonRepresentation = document.getElementById("jsonRepresentation");
     updateJson();
     addClickListener("loadJsonButton", loadJson);
-    window.requestAnimationFrame(draw);
+    renderMode = INTERVAL;
+    if(renderMode = INTERVAL)
+    {
+        setInterval(draw, 1000 / FPS);
+    }
+    else if(renderMode == REQUEST_ANIMATION_FRAME)
+    {
+        window.requestAnimationFrame(draw);
+    }
+    else
+    {
+        console.error("Uknown render mode:", renderMode);
+    }
 }
 
 function initSoundLoop()
@@ -107,7 +122,6 @@ function loadScoreFromUrl()
 function getSearchParameter(parameterName)
 {
     var parameters = location.search.substring(1).split("&");
-    console.log("parameters =", parameters);
     for(var parameter of parameters)
     {
         var keyAndValue = parameter.split("=");
@@ -400,7 +414,10 @@ function draw()
     drawBeatLines();
     drawNotes();
     drawTimeMarker();
-    window.requestAnimationFrame(draw);
+    if(renderMode == REQUEST_ANIMATION_FRAME)
+    {
+        window.requestAnimationFrame(draw);
+    }
 }
 
 function drawNoteLines()
