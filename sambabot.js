@@ -430,8 +430,11 @@ function selectNodesInRectangle()
     {
         var x = calculateNoteX(note);
         var y = calculateNoteY(note);
-        if(x > selectionStartPoint.x && x < selectionEndPoint.x &&
-           y > selectionStartPoint.y && y < selectionEndPoint.y)
+        var minX = Math.min(selectionStartPoint.x, selectionEndPoint.x);
+        var maxX = Math.max(selectionStartPoint.x, selectionEndPoint.x);
+        var minY = Math.min(selectionStartPoint.y, selectionEndPoint.y);
+        var maxY = Math.max(selectionStartPoint.y, selectionEndPoint.y);
+        if(x > minX && x < maxX && y > minY && y < maxY)
         {
             selectedNotes.push(note);
         }
