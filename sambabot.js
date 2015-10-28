@@ -10,11 +10,11 @@ var INTERVAL = "INTERVAL"
 var score = {
     beats: 8,
     bpm: 80,
-    noteTypes: {
-        0: "sounds/repinique-head.ogg",
-        1: "sounds/repinique-rimshot.ogg",
-        2: "sounds/repinique-hand.ogg"
-    },
+    noteTypes: [
+        "sounds/repinique-head.ogg",
+        "sounds/repinique-rimshot.ogg",
+        "sounds/repinique-hand.ogg"
+    ],
     notes: [
         {time: 0.0, type: 0},
         {time: 0.25, type: 1},
