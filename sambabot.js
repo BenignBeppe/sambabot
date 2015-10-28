@@ -29,7 +29,7 @@ var canvas;
 var context;
 var startTime;
 var looping = false;
-var selectedNote;
+var selectedNotes = [];
 var highlightedNote;
 var highlightedNoteLine;
 var mode;
@@ -38,10 +38,12 @@ var clickSound;
 var jsonRepresentation;
 var spaceDown = false;
 var recordKeys = {
-    "j": {"noteType": 0, "down": false},
-    "k": {"noteType": 1, "down": false},
-    "f": {"noteType": 2, "down": false}
+    j: {noteType: 0, down: false},
+    k: {noteType: 1, down: false},
+    f: {noteType: 2, down: false}
 }
+var selectionStartPoint;
+var selectionEndPoint;
 
 function onLoad()
 {
@@ -242,6 +244,8 @@ function updateBpm(event)
 
 function mouseDown(event)
 {
+    var x = xInCanvas(event.clientX);
+    var y = yInCanvas(event.clientY);
     if(mode == ADD_NOTE)
     {
         if(highlightedNoteLine == null)
@@ -250,7 +254,7 @@ function mouseDown(event)
         }
         else
         {
-            addNote(xInCanvas(event.clientX), highlightedNoteLine);
+            addNote(x, highlightedNoteLine);
             updateScoreInSoundLoop();
         }
     }
@@ -267,10 +271,21 @@ function mouseDown(event)
     }
     else
     {
-        var x = xInCanvas(event.clientX);
-        var y = yInCanvas(event.clientY);
-        selectedNote = withinNote(x, y);
-        highlightedNote = selectedNote;
+        var note = withinNote(x, y);
+        if(note != null)
+        {
+            if(selectedNotes.indexOf(note) == -1)
+            {
+                selectedNotes = [];
+                selectNote(note);
+            }
+        }
+        else
+        {
+            selectedNotes = [];
+            selectionStartPoint = {x: x, y: y};
+            selectionEndPoint = {x: x, y: y};
+        }
     }
 }
 
@@ -316,6 +331,14 @@ function withinNote(x, y)
     }
 }
 
+function selectNote(note)
+{
+    if(selectedNotes.indexOf(note) == -1)
+    {
+        selectedNotes.push(note);
+    }
+}
+
 function mouseMove(event)
 {
     var y = yInCanvas(event.clientY);
@@ -328,9 +351,17 @@ function mouseMove(event)
     {
         highlightedNote = withinNote(x, y);
     }
-    else if(selectedNote != null)
+    else if(event.buttons == 1 && selectedNotes.length > 0)
     {
-        moveNote(selectedNote, x)
+        for(var note of selectedNotes)
+        {
+            moveNote(note, event.movementX);
+        }
+    }
+    else if(selectionStartPoint != null)
+    {
+        selectionEndPoint.x = x;
+        selectionEndPoint.y = y;
     }
     else
     {
@@ -338,9 +369,9 @@ function mouseMove(event)
     }
 }
 
-function moveNote(note, x)
+function moveNote(note, deltaX)
 {
-    note.time = calculateNoteTime(x);
+    note.time += calculateNoteTime(deltaX);
     updateScoreInSoundLoop();
     updateJson();
 }
@@ -382,7 +413,26 @@ function loadJson()
 
 function mouseUp(event)
 {
-    selectedNote = null;
+    if(selectionStartPoint != null)
+    {
+        selectNodesInRectangle();
+        selectionStartPoint = null;
+        selectionEndPoint = null;
+    }
+}
+
+function selectNodesInRectangle()
+{
+    for(var note of score.notes)
+    {
+        var x = calculateNoteX(note);
+        var y = calculateNoteY(note);
+        if(x > selectionStartPoint.x && x < selectionEndPoint.x &&
+           y > selectionStartPoint.y && y < selectionEndPoint.y)
+        {
+            selectedNotes.push(note);
+        }
+    }
 }
 
 function keyDown(event)
@@ -414,6 +464,7 @@ function draw()
     drawBeatLines();
     drawNotes();
     drawTimeMarker();
+    drawSelectionRectangle();
     if(renderMode == REQUEST_ANIMATION_FRAME)
     {
         window.requestAnimationFrame(draw);
@@ -488,7 +539,7 @@ function drawNote(note)
     var y = calculateNoteY(note);
     var previousStrokeStyle = context.strokeStyle;
     var previousFillStyle = context.fillStyle;
-    if(selectedNote == note)
+    if(selectedNotes.indexOf(note) != -1)
     {
         context.fillStyle = "rgb(255, 0, 0)";
     }
@@ -545,4 +596,18 @@ function drawTimeMarker()
 function calculateDuration()
 {
     return score.beats / score.bpm * 60;
+}
+
+function drawSelectionRectangle()
+{
+    if(selectionStartPoint != null)
+    {
+        context.beginPath();
+        context.lineWidth = 1;
+        context.rect(selectionStartPoint.x,
+                     selectionStartPoint.y,
+                     selectionEndPoint.x - selectionStartPoint.x,
+                     selectionEndPoint.y - selectionStartPoint.y);
+        context.stroke();
+    }
 }
