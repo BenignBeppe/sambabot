@@ -15,7 +15,7 @@ function loop(playIntro)
             postMessageToMain("playClick");
             clickList.shift();
         }
-        if(time >= ((60 / score.bpm) * numberOfIntroBeats + 1))
+        if(time >= numberOfIntroBeats)
         {
             playScore();
         }
