@@ -15,7 +15,7 @@ function loop(playIntro)
             postMessageToMain("playClick");
             clickList.shift();
         }
-        if(time >= ((60 / score.bpm) * numberOfIntroBeats))
+        if(time >= ((60 / score.bpm) * numberOfIntroBeats + 1))
         {
             playScore();
         }
@@ -71,7 +71,7 @@ onmessage = function(message)
     }
     else if(type == "playIntro")
     {
-        generateClickList();
+        clickList = [0.0, 1.0, 2.0, 3.0];
         startTime = Date.now();
         postMessageToMain("startTime", startTime);
         loop(true);
@@ -79,16 +79,6 @@ onmessage = function(message)
     else
     {
         log.warn("Message of unkown type received:", message);
-    }
-}
-
-function generateClickList()
-{
-    clickList = [];
-    for(var i = 0; i < numberOfIntroBeats; i ++)
-    {
-        var clickTime = ((60 / score.bpm) * i);
-        clickList.push(clickTime);
     }
 }
 
