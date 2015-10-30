@@ -61,8 +61,8 @@ function onLoad()
     addClickListener("addButton", enterAddNoteMode);
     addClickListener("removeButton", enterRemoveNoteMode);
     addClickListener("recordButton", record);
-    addClickListener("playButton", play);
-    addClickListener("loopButton", startPlayingLooped);
+    addClickListener("playButton", function(){play()});
+    addClickListener("loopButton", function(){play(true)});
     addClickListener("stopButton", stop);
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
@@ -185,7 +185,19 @@ function onSoundLoopMessage(message)
 
 function postMessageToSoundLoop(type, content)
 {
-    soundLoop.postMessage({type: type, content: content});
+    if(content == null)
+    {
+        content = {};
+    }
+    var message = {type: type, content: content};
+    try
+    {
+        soundLoop.postMessage(message);
+    }
+    catch(e)
+    {
+        console.error("Couldn't post message:", message, e.message);
+    }
 }
 
 function addClickListener(elementId, listenerFunction)
@@ -210,9 +222,9 @@ function record()
     postMessageToSoundLoop("playIntro");
 }
 
-function play()
+function play(looping)
 {
-    postMessageToSoundLoop("play");
+    postMessageToSoundLoop("play", {looping: looping});
     startTime = Date.now();
 }
 
@@ -220,28 +232,15 @@ function playNote(noteIndex)
 {
     var note = score.notes[noteIndex];
     var sound = sounds[noteIndex];
-    console.log("> playNote():", note.time - (Date.now() - startTime) / 1000.0);
+    var expectedTime = Date.now() - startTime;
+    var actualTime = note.time * (60 / score.bpm);
+    console.log("> playNote():", actualTime - expectedTime / 1000.0);
     sound.play();
-}
-
-function startPlayingLooped()
-{
-    looping = true;
-    playLoop();
-}
-
-function playLoop()
-{
-    if(looping)
-    {
-        play();
-        setTimeout(playLoop, calculateDuration() * 1000);
-    }
 }
 
 function stop()
 {
-    looping = false;
+    postMessageToSoundLoop("stop");
 }
 
 function updateBpm(event)

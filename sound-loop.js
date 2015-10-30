@@ -1,27 +1,24 @@
 var score;
 var startTime;
-var time;
-var running;
+var beatTime;
 var numberOfIntroBeats = 4;
 var clickList;
+var intervalId;
+var looping = false;
 
-function loop(playIntro)
+function frame(playIntro)
 {
-    time = ((Date.now() - startTime) * score.bpm / 60) / 1000.0;
+    beatTime = ((Date.now() - startTime) * score.bpm / 60) / 1000.0;
     if(playIntro)
     {
-        if(time >= clickList[0])
+        if(beatTime >= clickList[0])
         {
             postMessageToMain("playClick");
             clickList.shift();
         }
-        if(time >= numberOfIntroBeats)
+        if(beatTime >= numberOfIntroBeats)
         {
             playScore();
-        }
-        else
-        {
-            setTimeout(loop, 10, true);
         }
     }
     else
@@ -29,20 +26,23 @@ function loop(playIntro)
         for(var i = 0; i < score.notes.length; i ++)
         {
             var note = score.notes[i];
-            if(!note.played && time >= note.time)
+            if(!note.played && beatTime >= note.time)
             {
                 postMessageToMain("playNote", i);
                 note.played = true;
             }
         }
-        if(time >= score.beats)
+        if(beatTime >= score.beats)
         {
-            running = false;
-            postMessageToMain("scoreDone");
-        }
-        else
-        {
-            setTimeout(loop, 10, playIntro);
+            if(looping)
+            {
+                playScore();
+            }
+            else
+            {
+                clearInterval(intervalId);
+                postMessageToMain("scoreDone");
+            }
         }
     }
 }
@@ -62,11 +62,12 @@ onmessage = function(message)
         score = content;
         for(note of score.notes)
         {
-            note.played = time >= note.time;
+            note.played = beatTime >= note.time;
         }
     }
     else if(type == "play")
     {
+        looping = content.looping;
         playScore();
     }
     else if(type == "playIntro")
@@ -74,7 +75,12 @@ onmessage = function(message)
         clickList = [0.0, 1.0, 2.0, 3.0];
         startTime = Date.now();
         postMessageToMain("startTime", startTime);
-        loop(true);
+        intervalId = setInterval(frame, 10, true);
+    }
+    else if(type == "stop")
+    {
+        looping = false;
+        clearInterval(intervalId);
     }
     else
     {
@@ -91,5 +97,6 @@ function playScore()
     }
     startTime = Date.now();
     postMessageToMain("startTime", startTime);
-    loop();
+    clearInterval(intervalId);
+    intervalId = setInterval(frame, 10);
 }
