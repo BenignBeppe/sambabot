@@ -502,6 +502,7 @@ function undo()
         score = undoHistory.pop();
         updateScoreInSoundLoop();
         updateSounds();
+        updateJson();
     }
 }
 
