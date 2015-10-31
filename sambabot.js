@@ -2,6 +2,7 @@ var NOTE_SIZE = 5;
 var CLOSE_DISTANCE = 20;
 var ADD_NOTE = "ADD_NOTE";
 var REMOVE_NOTE = "REMOVE_NOTE";
+var RESIZE = "RESIZE";
 var RECORD = "RECORD";
 var FPS = 30;
 var REQUEST_ANIMATION_FRAME = "REQUEST_ANIMATION_FRAME"
@@ -46,6 +47,8 @@ var selectionStartPoint;
 var selectionEndPoint;
 var undoHistory = [];
 var notesMoved = false;
+var clickedNote;
+var firstNote;
 
 function onLoad()
 {
@@ -60,10 +63,11 @@ function onLoad()
     context = scoreCanvas.getContext("2d");
     addClickListener("addButton", enterAddNoteMode);
     addClickListener("removeButton", enterRemoveNoteMode);
-    addClickListener("recordButton", record);
+    addClickListener("resizeButton", toggleResizeMode);
     addClickListener("playButton", function(){play()});
     addClickListener("loopButton", function(){play(true)});
     addClickListener("stopButton", stop);
+    addClickListener("recordButton", record);
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
     bpmInput.value = score.bpm;
@@ -216,10 +220,18 @@ function enterRemoveNoteMode()
     mode = REMOVE_NOTE;
 }
 
-function record()
+function toggleResizeMode()
 {
-    mode = RECORD;
-    postMessageToSoundLoop("playIntro");
+    if(mode == RESIZE)
+    {
+        mode = null;
+        canvas.style.cursor = "default";
+    }
+    else
+    {
+        mode = RESIZE;
+        canvas.style.cursor = "ew-resize";
+    }
 }
 
 function play(looping)
@@ -241,6 +253,12 @@ function playNote(noteIndex)
 function stop()
 {
     postMessageToSoundLoop("stop");
+}
+
+function record()
+{
+    mode = RECORD;
+    postMessageToSoundLoop("playIntro");
 }
 
 function updateBpm(event)
@@ -279,16 +297,16 @@ function mouseDown(event)
     }
     else
     {
-        var note = withinNote(x, y);
-        if(note != null)
+        clickedNote = withinNote(x, y);
+        if(clickedNote != null)
         {
-            if(selectedNotes.indexOf(note) == -1)
+            if(selectedNotes.indexOf(clickedNote) == -1)
             {
                 if(!event.shiftKey)
                 {
                     selectedNotes = [];
                 }
-                selectNote(note);
+                selectNote(clickedNote);
             }
         }
         else
@@ -367,13 +385,20 @@ function mouseMove(event)
     {
         highlightedNote = withinNote(x, y);
     }
+    else if(mode == RESIZE && event.buttons == 1 && selectedNotes.length > 0)
+    {
+        saveUndoStateBeforeNotesAreMoved();
+        for(var note of selectedNotes)
+        {
+            var deltaX = event.movementX *
+                ((note.time - firstNote.time) /
+                 (clickedNote.time - firstNote.time));
+            moveNote(note, deltaX);
+        }
+    }
     else if(event.buttons == 1 && selectedNotes.length > 0)
     {
-        if(!notesMoved)
-        {
-            notesMoved = true;
-            saveUndoState();
-        }
+        saveUndoStateBeforeNotesAreMoved();
         for(var note of selectedNotes)
         {
             moveNote(note, event.movementX);
@@ -387,6 +412,15 @@ function mouseMove(event)
     else
     {
         highlightedNote = withinNote(x, y);
+    }
+}
+
+function saveUndoStateBeforeNotesAreMoved()
+{
+    if(!notesMoved)
+    {
+        notesMoved = true;
+        saveUndoState();
     }
 }
 
@@ -434,7 +468,7 @@ function mouseUp(event)
 {
     if(selectionStartPoint != null)
     {
-        selectNodesInRectangle();
+        selectNotesInRectangle();
         selectionStartPoint = null;
         selectionEndPoint = null;
     }
@@ -444,10 +478,12 @@ function mouseUp(event)
         updateJson();
         notesMoved = false;
     }
+    clickedNote = null;
 }
 
-function selectNodesInRectangle()
+function selectNotesInRectangle()
 {
+    var firstNoteTime = null;
     for(var note of score.notes)
     {
         var x = calculateNoteX(note);
@@ -458,7 +494,12 @@ function selectNodesInRectangle()
         var maxY = Math.max(selectionStartPoint.y, selectionEndPoint.y);
         if(x > minX && x < maxX && y > minY && y < maxY)
         {
-            selectedNotes.push(note);
+            selectNote(note);
+            if(firstNoteTime == null || note.time < firstNoteTime)
+            {
+                firstNote = note;
+                firstNoteTime = note.time;
+            }
         }
     }
 }
