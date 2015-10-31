@@ -77,7 +77,7 @@ function onLoad()
     updateJson();
     addClickListener("loadJsonButton", loadJson);
     renderMode = INTERVAL;
-    if(renderMode = INTERVAL)
+    if(renderMode == INTERVAL)
     {
         setInterval(draw, 1000 / FPS);
     }
