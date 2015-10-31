@@ -49,6 +49,7 @@ var undoHistory = [];
 var notesMoved = false;
 var clickedNote;
 var firstNote;
+var animate = true;
 
 function onLoad()
 {
@@ -71,6 +72,9 @@ function onLoad()
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
     bpmInput.value = score.bpm;
+    var animateCheckbox = document.getElementById("animateCheckbox");
+    animateCheckbox.addEventListener("change", function(e){
+        animate=e.target.checked}, false);
     addEventListener("keydown", keyDown, false);
     addEventListener("keyup", keyUp, false);
     jsonRepresentation = document.getElementById("jsonRepresentation");
@@ -556,12 +560,15 @@ function keyUp(event)
 
 function draw()
 {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawNoteLines();
-    drawBeatLines();
-    drawNotes();
-    drawTimeMarker();
-    drawSelectionRectangle();
+    if(animate)
+    {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        drawNoteLines();
+        drawBeatLines();
+        drawNotes();
+        drawTimeMarker();
+        drawSelectionRectangle();
+    }
     if(renderMode == REQUEST_ANIMATION_FRAME)
     {
         window.requestAnimationFrame(draw);
