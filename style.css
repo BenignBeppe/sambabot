@@ -1,4 +1,25 @@
 .scoreCanvas
 {
-    border: 1px solid black;
+    border: solid black 1px;
+}
+
+.overlay
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    visibility: hidden;
+}
+
+.popup
+{
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    background: white;
+    border: solid black 1px;
+    visibility: hidden;
 }

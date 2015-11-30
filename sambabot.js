@@ -50,12 +50,14 @@ var notesMoved = false;
 var clickedNote;
 var firstNote;
 var animate = true;
+var shownDialogue = null;
 
 function onLoad()
 {
     initSoundLoop();
     updateSounds();
     clickSound = new Audio("sounds/repinique-head.ogg");
+    jsonRepresentation = document.getElementById("jsonRepresentation");
     loadScoreFromUrl();
     canvas = document.getElementById("scoreCanvas");
     canvas.addEventListener("mousedown", mouseDown, false);
@@ -77,7 +79,6 @@ function onLoad()
         animate=e.target.checked}, false);
     addEventListener("keydown", keyDown, false);
     addEventListener("keyup", keyUp, false);
-    jsonRepresentation = document.getElementById("jsonRepresentation");
     updateJson();
     addClickListener("loadJsonButton", loadJson);
     renderMode = INTERVAL;
@@ -120,16 +121,22 @@ function loadScoreFromUrl()
     {
         var scorePath = "scores/" + scoreName + ".json";
         console.log("scorePath =", scorePath);
-        var request = new XMLHttpRequest();
-        request.open("GET", scorePath);
-        request.onreadystatechange = function() {
-            var scoreJson = request.response;
-            jsonRepresentation.value = scoreJson;
-            loadJson();
-        };
-        request.send();
+        jsonRepresentation.value = readFile(scorePath);
+        loadJson();
     }
     saveUndoState();
+}
+
+function readFile(path)
+{
+    var request = new XMLHttpRequest();
+    request.open("GET", path, false);
+    var content;
+    request.onreadystatechange = function() {
+        content = request.response;
+    };
+    request.send();
+    return content;
 }
 
 function saveUndoState()
@@ -263,6 +270,36 @@ function record()
 {
     mode = RECORD;
     postMessageToSoundLoop("playIntro");
+}
+
+function importFromScore()
+{
+    var dialogue = showDialogue("importDialogue");
+    var scores = readFile("scores-list.txt").trim().split("\n");
+    for(var score of scores)
+    {
+        var button = document.createElement("button");
+        button.innerHTML = score;
+        var item = document.createElement("li");
+        document.getElementById("dialogueScoreList").appendChild(item);
+        item.appendChild(button);
+    }
+}
+
+function showDialogue(id)
+{
+    document.getElementById("overlay").style.visibility = "visible";
+    var dialogue = document.getElementById(id);
+    dialogue.style.visibility = "visible";
+    shownDialogue = id;
+    return dialogue;
+}
+
+function cancelDialogue()
+{
+    document.getElementById("overlay").style.visibility = "hidden";
+    document.getElementById(shownDialogue).style.visibility = "hidden";
+    shownDialogue = null;
 }
 
 function updateBpm(event)

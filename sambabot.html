@@ -11,6 +11,7 @@
       <button id="addButton">Add note</button>
       <button id="removeButton">Remove note</button>
       <button id="resizeButton">Resize</button>
+      <button onclick="importFromScore()">Import</button>
     </div>
     <div>
       <button id="playButton">Play</button>
@@ -25,6 +26,12 @@
     <div>
       <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
       <button id="loadJsonButton">Load</button>
+    </div>
+    <div id="overlay" class="overlay"></div>
+    <div id="importDialogue" class="popup">
+      <h1>Select score to import from</h1>
+      <ul id="dialogueScoreList" style="list-style-type: none"></ul>
+      <button onclick="cancelDialogue()">Cancel</button>
     </div>
   </body>
 </html>
