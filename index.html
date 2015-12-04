@@ -9,16 +9,16 @@
     <canvas id="scoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
     <br />
     <div>
-      <button id="addButton">Add note</button>
-      <button id="removeButton">Remove note</button>
-      <button id="resizeButton">Resize</button>
+      <button id="addButton" onclick="toggleAddNoteMode()">Add note</button>
+      <button id="removeButton" onclick="toggleRemoveNoteMode()">Remove note</button>
+      <button id="resizeButton" onclick="toggleResizeMode()">Resize</button>
       <button onclick="importFromScore()">Import</button>
     </div>
     <div>
-      <button id="playButton">Play</button>
-      <button id="loopButton">Play looped</button>
-      <button id="stopButton">Stop</button>
-      <button id="recordButton">Record</button>
+      <button id="playButton" onclick="play()">Play</button>
+      <button id="loopButton" onclick="play(true)">Play looped</button>
+      <button id="stopButton" onclick="stop()">Stop</button>
+      <button id="recordButton" onclick="record()">Record</button>
       BPM: <input id="bpmInput" type="number" min="1" />
     </div>
     <div>
@@ -26,7 +26,7 @@
     </div>
     <div>
       <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
-      <button id="loadJsonButton">Load</button>
+      <button id="loadJsonButton" onclick="loadJson()">Load</button>
     </div>
     <div id="overlay" class="overlay"></div>
     <div id="importDialogue" class="popup">

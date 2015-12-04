@@ -36,13 +36,6 @@ function onLoad()
     updateScoreInSoundLoop();
     updateSounds();
     clickSound = new Audio("sounds/repinique-head.ogg");
-    addClickListener("addButton", enterAddNoteMode);
-    addClickListener("removeButton", enterRemoveNoteMode);
-    addClickListener("resizeButton", toggleResizeMode);
-    addClickListener("playButton", function(){play()});
-    addClickListener("loopButton", function(){play(true)});
-    addClickListener("stopButton", stop);
-    addClickListener("recordButton", record);
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
     bpmInput.value = mainSheet.getScore().bpm;
@@ -52,7 +45,6 @@ function onLoad()
     addEventListener("keydown", keyDown, false);
     addEventListener("keyup", keyUp, false);
     updateJson();
-    addClickListener("loadJsonButton", loadJson);
     renderMode = INTERVAL;
     if(renderMode == INTERVAL)
     {
@@ -77,7 +69,6 @@ function initSoundLoop()
 function updateSounds()
 {
     sounds = [];
-    console.log("score =", mainSheet.getScore());
     for(note of mainSheet.getScore().notes)
     {
         var sound = new Audio(mainSheet.getScore().noteTypes[note.type]);
@@ -129,7 +120,6 @@ function loadScoreFromUrl()
     if(scoreName != null)
     {
         var scorePath = "scores/" + scoreName + ".json";
-        console.log("scorePath =", scorePath);
         jsonRepresentation.value = readFile(scorePath);
         loadJson();
     }
@@ -225,28 +215,34 @@ function addClickListener(elementId, listenerFunction)
     element.addEventListener("click", listenerFunction, false);
 }
 
-function enterAddNoteMode()
+function toggleAddNoteMode()
 {
-    mode = ADD_NOTE;
+    toggleMode(ADD_NOTE, "crosshair");
 }
 
-function enterRemoveNoteMode()
+function toggleMode(newMode, cursor)
 {
-    mode = REMOVE_NOTE;
-}
-
-function toggleResizeMode()
-{
-    if(mode == RESIZE)
+    if(newMode == mode)
     {
         mode = null;
         canvas.style.cursor = "default";
     }
     else
     {
-        mode = RESIZE;
-        canvas.style.cursor = "ew-resize";
+        console.log("Entering mode:", newMode)
+        mode = newMode;
+        canvas.style.cursor = cursor;
     }
+}
+
+function toggleRemoveNoteMode()
+{
+    toggleMode(REMOVE_NOTE);
+}
+
+function toggleResizeMode()
+{
+    toggleMode(RESIZE, "ew-resize");
 }
 
 function play(looping)
@@ -353,7 +349,6 @@ function undo()
 {
     if(undoHistory.length > 0)
     {
-        console.log("history =", undoHistory);
         mainSheet.setScore(undoHistory.pop());
         updateScoreInSoundLoop();
         updateSounds();
