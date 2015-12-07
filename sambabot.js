@@ -274,16 +274,27 @@ function record()
 
 function importFromScore()
 {
-    var dialogue = showDialogue("importDialogue");
+    var scoreList = document.getElementById("dialogueScoreList");
+    clearChildren(scoreList);
     var scores = readFile("scores-list.txt").trim().split("\n");
     for(var score of scores)
     {
         var button = document.createElement("button");
         button.innerHTML = score;
         var item = document.createElement("li");
-        document.getElementById("dialogueScoreList").appendChild(item);
+        scoreList.appendChild(item);
         item.appendChild(button);
     }
+    var dialogue = showDialogue("importDialogue");
+}
+
+function clearChildren(node)
+{
+    while(node.firstChild != null)
+    {
+        node.removeChild(node.firstChild);
+    }
+
 }
 
 function showDialogue(id)
