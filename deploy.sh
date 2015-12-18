@@ -2,7 +2,7 @@
 
 DESTINATION_PATH=~/Dropbox/Public/sambabot
 
-ls -1B scores > scores-list.txt
+ls -1B scores | sed -r "s/\.json//g" > scores-list.txt
 for d in $(find . -type d -not -path "." -not -path "*/.*")
 do
     mkdir -v $DESTINATION_PATH/$d

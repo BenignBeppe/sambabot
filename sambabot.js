@@ -25,20 +25,20 @@ var notesMoved = false;
 var animate = true;
 var shownDialogue;
 var renderMode;
+var importSheet;
 
 function onLoad()
 {
     jsonRepresentation = document.getElementById("jsonRepresentation");
-    canvas = document.getElementById("scoreCanvas");
     initSoundLoop();
-    mainSheet = new Sheet(canvas);
+    mainSheet = new MainSheet(document.getElementById("scoreCanvas"));
     loadInitialScore();
     updateScoreInSoundLoop();
     updateSounds();
     clickSound = new Audio("sounds/repinique-head.ogg");
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
-    bpmInput.value = mainSheet.getScore().bpm;
+    bpmInput.value = mainSheet.score.bpm;
     var animateCheckbox = document.getElementById("animateCheckbox");
     animateCheckbox.addEventListener("change", function(e){
         animate=e.target.checked}, false);
@@ -58,6 +58,8 @@ function onLoad()
     {
         console.error("Uknown render mode:", renderMode);
     }
+    importSheet = new ImportSheet(
+        document.getElementById("importScoreCanvas"));
 }
 
 function initSoundLoop()
@@ -69,19 +71,18 @@ function initSoundLoop()
 function updateSounds()
 {
     sounds = [];
-    for(note of mainSheet.getScore().notes)
+    for(note of mainSheet.score.notes)
     {
-        var sound = new Audio(mainSheet.getScore().noteTypes[note.type]);
+        var sound = new Audio(mainSheet.score.noteTypes[note.type]);
         sounds.push(sound);
     }
 }
 
 function loadInitialScore()
 {
-    loadScoreFromUrl();
-    if(mainSheet.getScore() == null)
+    if(!loadScoreFromUrl())
     {
-        var score = {
+        mainSheet.score = {
             beats: 8,
             bpm: 80,
             noteTypes: [
@@ -99,7 +100,6 @@ function loadInitialScore()
                 {time: 1.5, type: 1},
                 {time: 1.75, type: 2}
             ]};
-        mainSheet.setScore(score);
         updateJson();
     }
     saveUndoState();
@@ -107,11 +107,10 @@ function loadInitialScore()
 
 function loadJson()
 {
-    var score = JSON.parse(jsonRepresentation.value);
-    mainSheet.setScore(score);
+    mainSheet.score = JSON.parse(jsonRepresentation.value);
     updateScoreInSoundLoop();
     updateSounds();
-    bpmInput.value = mainSheet.getScore().bpm;
+    bpmInput.value = mainSheet.score.bpm;
 }
 
 function loadScoreFromUrl()
@@ -119,10 +118,19 @@ function loadScoreFromUrl()
     var scoreName = getSearchParameter("score");
     if(scoreName != null)
     {
-        var scorePath = "scores/" + scoreName + ".json";
-        jsonRepresentation.value = readFile(scorePath);
-        loadJson();
+        mainSheet.score = readScoreFromFile(scoreName);
+        updateJson();
+        return true;
     }
+    return false;
+}
+
+function readScoreFromFile(scoreName)
+{
+    var scorePath = "scores/" + scoreName + ".json";
+    var json = readFile(scorePath);
+    var score = JSON.parse(json);
+    return score;
 }
 
 function readFile(path)
@@ -139,7 +147,7 @@ function readFile(path)
 
 function saveUndoState()
 {
-    undoHistory.push(JSON.parse(JSON.stringify(mainSheet.getScore())));
+    undoHistory.push(JSON.parse(JSON.stringify(mainSheet.score)));
     console.log("Saving undo state. # of states now:", undoHistory.length);
 }
 
@@ -158,7 +166,7 @@ function getSearchParameter(parameterName)
 
 function updateScoreInSoundLoop()
 {
-    postMessageToSoundLoop("score", mainSheet.getScore());
+    postMessageToSoundLoop("score", mainSheet.score);
 }
 
 function onSoundLoopMessage(message)
@@ -209,12 +217,6 @@ function postMessageToSoundLoop(type, content)
     }
 }
 
-function addClickListener(elementId, listenerFunction)
-{
-    var element = document.getElementById(elementId);
-    element.addEventListener("click", listenerFunction, false);
-}
-
 function toggleAddNoteMode()
 {
     toggleMode(ADD_NOTE, "crosshair");
@@ -225,13 +227,13 @@ function toggleMode(newMode, cursor)
     if(newMode == mode)
     {
         mode = null;
-        canvas.style.cursor = "default";
+        mainSheet.canvas.style.cursor = "default";
     }
     else
     {
         console.log("Entering mode:", newMode)
         mode = newMode;
-        canvas.style.cursor = cursor;
+        mainSheet.canvas.cursor = cursor;
     }
 }
 
@@ -253,10 +255,10 @@ function play(looping)
 
 function playNote(noteIndex)
 {
-    var note = mainSheet.getScore().notes[noteIndex];
+    var note = mainSheet.score.notes[noteIndex];
     var sound = sounds[noteIndex];
     var expectedTime = Date.now() - startTime;
-    var actualTime = note.time * (60 / mainSheet.getScore().bpm);
+    var actualTime = note.time * (60 / mainSheet.score.bpm);
     console.log("> playNote():", actualTime - expectedTime / 1000.0);
     sound.play();
 }
@@ -281,10 +283,12 @@ function importFromScore()
     {
         var button = document.createElement("button");
         button.innerHTML = score;
+        button.addEventListener("click", selectImportScore);
         var item = document.createElement("li");
         scoreList.appendChild(item);
         item.appendChild(button);
     }
+    importSheet.draw();
     var dialogue = showDialogue("importDialogue");
 }
 
@@ -294,7 +298,14 @@ function clearChildren(node)
     {
         node.removeChild(node.firstChild);
     }
+}
 
+function selectImportScore(event)
+{
+    var scoreName = this.innerHTML;
+    var score = readScoreFromFile(scoreName);
+    importSheet.score = score;
+    importSheet.draw();
 }
 
 function showDialogue(id)
@@ -306,7 +317,7 @@ function showDialogue(id)
     return dialogue;
 }
 
-function cancelDialogue()
+function closeDialogue()
 {
     document.getElementById("overlay").style.visibility = "hidden";
     document.getElementById(shownDialogue).style.visibility = "hidden";
@@ -315,7 +326,7 @@ function cancelDialogue()
 
 function updateBpm(event)
 {
-    mainSheet.getScore().bpm = parseFloat(event.target.value);
+    mainSheet.score.bpm = parseFloat(event.target.value);
     updateScoreInSoundLoop();
     updateJson();
 }
@@ -328,7 +339,7 @@ function addSound(path)
 
 function updateJson()
 {
-    jsonRepresentation.value = JSON.stringify(mainSheet.getScore(), null, 4);
+    jsonRepresentation.value = JSON.stringify(mainSheet.score, null, 4);
 }
 
 function keyDown(event)
@@ -338,7 +349,7 @@ function keyDown(event)
         if(event.key in recordKeys && !recordKeys[event.key].down)
         {
             var time = ((Date.now() - startTime) / 1000) /
-                mainSheet.calculateDuration() * mainSheet.getScore().beats;
+                mainSheet.calculateDuration() * mainSheet.score.beats;
             mainSheet.addNote(time, recordKeys[event.key].noteType);
             recordKeys[event.key].down = true;
         }
@@ -360,7 +371,7 @@ function undo()
 {
     if(undoHistory.length > 0)
     {
-        mainSheet.setScore(undoHistory.pop());
+        mainSheet.score = undoHistory.pop();
         updateScoreInSoundLoop();
         updateSounds();
         updateJson();

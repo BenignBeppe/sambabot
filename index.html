@@ -30,9 +30,11 @@
     </div>
     <div id="overlay" class="overlay"></div>
     <div id="importDialogue" class="popup">
-      <h1>Select score to import from</h1>
+      <h1>Import Notes</h1>
+      <canvas id="importScoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
+      <h2>Select score to import from</h2>
       <ul id="dialogueScoreList" style="list-style-type: none"></ul>
-      <button onclick="cancelDialogue()">Cancel</button>
+      <button onclick="closeDialogue()">Close</button>
     </div>
   </body>
 </html>

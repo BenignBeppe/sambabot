@@ -1,231 +1,403 @@
 var MAIN_COLOUR = "rgb(0, 0, 0)"
 var HIGHLIGHT_COLOUR = "rgb(255, 0, 0)"
+var IMPORT_COLOUR = "rgb(0, 255, 255)"
 
 function Sheet(canvas)
 {
-    var score;
-    var context = canvas.getContext("2d");
-    var highlightedNoteLine;
-    var selectionStartPoint;
-    var selectedNotes = [];
-    var clickedNote;
-    var highlightedNote;
-    var notesMoved = false;
-    canvas.addEventListener("mousemove", mouseMove, false);
-    canvas.addEventListener("mousedown", mouseDown, false);
-    canvas.addEventListener("mouseup", mouseUp, false);
+    this.canvas = canvas;
+    this.context = this.canvas.getContext("2d");
+    this.score = {beats: 4, bpm: 90, noteTypes: [], notes: []};
+    this.highlightedBeat;
+    this.selectionStartPoint;
+    this.selectedNotes = [];
+    this.clickedNote;
+    this.highlightedNote;
 
     this.draw = function()
     {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        drawNoteLines();
-        drawBeatLines();
-        drawNotes();
-        drawTimeMarker();
-        drawSelectionRectangle();
+        this.context.clearRect(0, 0, canvas.width, canvas.height);
+        this.drawNoteLines();
+        this.drawBeatLines();
+        this.drawNotes();
+        this.drawSelectionRectangle();
     }
 
-    function drawNoteLines()
+    this.drawNoteLines = function()
     {
-        for(var i = 0; i < numberOfNoteTypes(); i ++)
+        for(var i = 0; i < this.numberOfNoteTypes(); i ++)
         {
-            drawNoteLine(i);
+            this.drawNoteLine(i);
         }
     }
 
-    function numberOfNoteTypes()
+    this.numberOfNoteTypes = function()
     {
-        return Object.keys(score.noteTypes).length
+        return Object.keys(this.score.noteTypes).length
     }
 
-    function drawNoteLine(index)
+    this.drawNoteLine = function(index)
     {
-        y = calculateNoteTypeY(index);
-        if(highlightedNoteLine == index)
-        {
-            context.strokeStyle = HIGHLIGHT_COLOUR;
-        }
-        else
-        {
-            context.strokeStyle = MAIN_COLOUR;
-        }
-        drawLine(0, y, canvas.width, y, 1);
+        y = this.calculateNoteTypeY(index);
+        this.context.strokeStyle = MAIN_COLOUR;
+        this.drawLine(0, y, this.canvas.width, y, 1);
     }
 
-    function calculateNoteTypeY(noteType)
+    this.calculateNoteTypeY = function(noteType)
     {
-        var gapSize = canvas.height / (numberOfNoteTypes() + 1);
+        var gapSize = canvas.height / (this.numberOfNoteTypes() + 1);
         return gapSize * (noteType + 1);
     }
 
-    function drawLine(startX, startY, endX, endY, width)
+    this.drawLine = function(startX, startY, endX, endY, width)
     {
-        context.beginPath();
-        context.lineWidth = width;
-        context.moveTo(startX, startY);
-        context.lineTo(endX, endY);
-        context.stroke();
+        this.context.beginPath();
+        this.context.lineWidth = width;
+        this.context.moveTo(startX, startY);
+        this.context.lineTo(endX, endY);
+        this.context.stroke();
     }
 
-    function drawBeatLines()
+    this.drawBeatLines = function()
     {
-        context.strokeStyle = MAIN_COLOUR;
-        for(var i = 1; i < score.beats; i ++)
+        this.context.strokeStyle = MAIN_COLOUR;
+        for(var i = 1; i < this.score.beats; i ++)
         {
-            drawBeatLine(i);
+            this.drawBeatLine(i);
         }
     }
 
-    function drawBeatLine(index)
+    this.drawBeatLine = function(index)
     {
-        var x = (canvas.width / (score.beats / index));
-        drawLine(x, 0, x, canvas.height, 1);
+        var x = (this.canvas.width / (this.score.beats / index));
+        this.drawLine(x, 0, x, this.canvas.height, 1);
     }
 
-    function drawNotes()
+    this.drawNotes = function()
     {
-        for(var note of score.notes)
+        for(var note of this.score.notes)
         {
-            drawNote(note);
-        }
-    }
-
-    function drawNote(note)
-    {
-        var x = calculateNoteX(note);
-        var y = calculateNoteY(note);
-        var previousStrokeStyle = context.strokeStyle;
-        var previousFillStyle = context.fillStyle;
-        if(selectedNotes.indexOf(note) != -1)
-        {
-            context.fillStyle = "rgb(255, 0, 0)";
-        }
-        if(highlightedNote == note)
-        {
-            context.strokeStyle = "rgb(255, 0, 0)";
-            strokeCircle(x, y, NOTE_SIZE, 3);
-        }
-        fillCircle(x, y, NOTE_SIZE);
-        context.strokeStyle = previousStrokeStyle;
-        context.fillStyle = previousFillStyle;
-    }
-
-    function calculateNoteX(note)
-    {
-        var x = timeToX(note.time);
-        return x;
-    }
-
-    function timeToX(time)
-    {
-        var x = time / score.beats * canvas.width;
-        return x;
-    }
-
-    function calculateNoteY(note)
-    {
-        return calculateNoteTypeY(note.type);
-    }
-
-    function strokeCircle(x, y, r, width)
-    {
-        context.beginPath();
-        context.arc(x, y, r, 0, 2 * Math.PI);
-        context.lineWidth = width;
-        context.stroke();
-    }
-
-    function fillCircle(x, y, r)
-    {
-        context.beginPath();
-        context.arc(x, y, r, 0, 2 * Math.PI);
-        context.fill();
-    }
-
-    function drawTimeMarker()
-    {
-        var time = Date.now();
-        var x = (((time - startTime) / 1000.0) / calculateDuration()) *
-            canvas.width;
-        drawLine(x, 0, x, canvas.height, 2);
-    }
-
-    function calculateDuration()
-    {
-        return score.beats / score.bpm * 60;
-    }
-
-    function drawSelectionRectangle()
-    {
-        if(selectionStartPoint != null)
-        {
-            context.beginPath();
-            context.lineWidth = 1;
-            context.rect(selectionStartPoint.x,
-                         selectionStartPoint.y,
-                         selectionEndPoint.x - selectionStartPoint.x,
-                         selectionEndPoint.y - selectionStartPoint.y);
-            context.stroke();
-        }
-    }
-
-    function mouseMove(event)
-    {
-        var x = xInCanvas(event.clientX);
-        var y = yInCanvas(event.clientY);
-        if(mode == ADD_NOTE)
-        {
-            highlightedNoteLine = closeToNoteLine(y);
-        }
-        else if(mode == REMOVE_NOTE)
-        {
-            highlightedNote = withinNote(x, y);
-        }
-        else if(mode == RESIZE && event.buttons == 1 &&
-                selectedNotes.length > 0)
-        {
-            saveUndoStateBeforeNotesAreMoved();
-            for(var note of selectedNotes)
+            if(this.highlightedNote == note)
             {
-                var deltaX = event.movementX *
-                    ((note.time - firstNote.time) /
-                     (clickedNote.time - firstNote.time));
-                moveNote(note, deltaX);
+                var x = this.calculateNoteX(note);
+                var y = this.calculateNoteY(note);
+                this.context.strokeStyle = HIGHLIGHT_COLOUR;
+                this.strokeCircle(x, y, NOTE_SIZE, 3);
+            }
+            if(this.selectedNotes.indexOf(note) != -1)
+            {
+                this.drawNote(note, HIGHLIGHT_COLOUR);
+            }
+            else
+            {
+                this.drawNote(note);
             }
         }
-        else if(event.buttons == 1 && selectedNotes.length > 0)
+    }
+
+    this.drawNote = function(note, colour)
+    {
+        if(colour == null)
         {
-            saveUndoStateBeforeNotesAreMoved();
-            moveSelectedNotes(event.movementX);
+            colour = MAIN_COLOUR;
         }
-        else if(selectionStartPoint != null)
+        this.context.fillStyle = colour;
+        var x = this.calculateNoteX(note);
+        var y = this.calculateNoteY(note);
+        this.fillCircle(x, y, NOTE_SIZE);
+    }
+
+    this.calculateNoteX = function(note)
+    {
+        var x = this.timeToX(note.time);
+        return x;
+    }
+
+    this.timeToX = function(time)
+    {
+        var x = time / this.score.beats * this.canvas.width;
+        return x;
+    }
+
+    this.calculateNoteY = function(note)
+    {
+        return this.calculateNoteTypeY(note.type);
+    }
+
+    this.strokeCircle = function(x, y, r, width)
+    {
+        this.context.beginPath();
+        this.context.arc(x, y, r, 0, 2 * Math.PI);
+        this.context.lineWidth = width;
+        this.context.stroke();
+    }
+
+    this.fillCircle = function(x, y, r)
+    {
+        this.context.beginPath();
+        this.context.arc(x, y, r, 0, 2 * Math.PI);
+        this.context.fill();
+    }
+
+    this.drawSelectionRectangle = function()
+    {
+        if(this.selectionStartPoint != null)
         {
-            selectionEndPoint.x = x;
-            selectionEndPoint.y = y;
+            this.context.beginPath();
+            this.context.lineWidth = 1;
+            this.context.rect(
+                this.selectionStartPoint.x,
+                this.selectionStartPoint.y,
+                this.selectionEndPoint.x - this.selectionStartPoint.x,
+                this.selectionEndPoint.y - this.selectionStartPoint.y);
+            this.context.stroke();
+        }
+    }
+
+    this.calculateDuration = function()
+    {
+        return this.score.beats / this.score.bpm * 60;
+    }
+
+    this.xInCanvas = function(rawX)
+    {
+        return rawX - this.canvas.offsetLeft -
+            this.canvas.parentElement.offsetLeft;
+    }
+
+    this.yInCanvas = function(rawY)
+    {
+        return rawY - this.canvas.offsetTop -
+            this.canvas.parentElement.offsetTop;
+    }
+
+    this.calculateNoteTime = function(x)
+    {
+        return (x / this.canvas.width) * this.score.beats;
+    }
+
+    this.moveSelectedNotes = function(deltaX)
+    {
+        for(var note of this.selectedNotes)
+        {
+            this.moveNote(note, deltaX);
+        }
+    }
+
+    this.xToTime = function(x)
+    {
+        var time = x  * this.score.beats / this.canvas.width;
+        return time;
+    }
+
+    this.calculateDuration = function()
+    {
+        return this.score.beats / this.score.bpm * 60;
+    }
+
+    this.getBeatContainingX = function(x)
+    {
+        var time = this.xToTime(x);
+        var beat = Math.floor(time);
+        return beat;
+    }
+
+    this.startSelection = function(event)
+    {
+        var x = this.xInCanvas(event.clientX);
+        var y = this.yInCanvas(event.clientY);
+        this.clickedNote = this.withinNote(x, y);
+        if(this.clickedNote != null)
+        {
+            if(this.selectedNotes.indexOf(this.clickedNote) == -1)
+            {
+                if(!event.shiftKey)
+                {
+                    this.selectedNotes = [];
+                }
+                this.selectNote(this.clickedNote);
+            }
         }
         else
         {
-            highlightedNote = withinNote(x, y);
+            this.selectedNotes = [];
+            this.selectionStartPoint = {x: x, y: y};
+            this.selectionEndPoint = {x: x, y: y};
         }
     }
 
-    function xInCanvas(rawX)
+    this.withinNote = function(x, y)
     {
-        return rawX - canvas.offsetLeft;
+        for(var note of this.score.notes)
+        {
+            var a = Math.abs(x - this.calculateNoteX(note));
+            var b = Math.abs(y - this.calculateNoteY(note));
+            var distance = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+            if(distance < NOTE_SIZE)
+            {
+                return note;
+            }
+        }
     }
 
-    function yInCanvas(rawY)
+    this.selectNote = function(note)
     {
-        return rawY - canvas.offsetTop;
+        if(this.selectedNotes.indexOf(note) == -1)
+        {
+            this.selectedNotes.push(note);
+            if(this.firstNote == null || note.time < this.firstNote.time)
+            {
+                this.firstNote = note;
+            }
+        }
     }
 
-    function closeToNoteLine(y)
+    this.selectNotesInRectangle = function()
+    {
+        var firstNoteTime = null;
+        for(var note of this.score.notes)
+        {
+            var x = this.calculateNoteX(note);
+            var y = this.calculateNoteY(note);
+            var minX = Math.min(this.selectionStartPoint.x,
+                                this.selectionEndPoint.x);
+            var maxX = Math.max(this.selectionStartPoint.x,
+                                this.selectionEndPoint.x);
+            var minY = Math.min(this.selectionStartPoint.y,
+                                this.selectionEndPoint.y);
+            var maxY = Math.max(this.selectionStartPoint.y,
+                                this.selectionEndPoint.y);
+            if(x > minX && x < maxX && y > minY && y < maxY)
+            {
+                this.selectNote(note);
+                if(firstNoteTime == null || note.time < firstNoteTime)
+                {
+                    this.firstNote = note;
+                    firstNoteTime = note.time;
+                }
+            }
+        }
+    }
+
+    this.updateSelection = function(x, y)
+    {
+        if(this.selectionStartPoint != null)
+        {
+            this.selectionEndPoint.x = x;
+            this.selectionEndPoint.y = y;
+        }
+        else
+        {
+            this.highlightedNote = this.withinNote(x, y);
+        }
+    }
+}
+
+function MainSheet(canvas)
+{
+    Sheet.call(this, canvas);
+    this.highlightedNoteLine;
+    this.firstNote;
+    this.notesMoved = false;
+    this.beatHoveredOver;
+    this.canvas.sheet = this;
+    this.canvas.addEventListener("mousemove",
+                                 function(e){this.sheet.mouseMove(e)},
+                                 false);
+    this.canvas.addEventListener("mousedown",
+                                 function(e){this.sheet.mouseDown(e)},
+                                 false);
+    this.canvas.addEventListener("mouseup",
+                                 function(e){this.sheet.mouseUp(e)},
+                                 false);
+
+    this.superDraw = this.draw;
+    this.draw = function()
+    {
+        this.superDraw();
+        if(importSheet.selectedNotes.length > 0)
+        {
+            for(var note of importSheet.selectedNotes)
+            {
+                var adjustedNote = this.adjustNote(note);
+                this.drawNote(adjustedNote, IMPORT_COLOUR);
+            }
+        }
+        this.drawTimeMarker();
+    }
+
+    this.adjustNote = function(note)
+    {
+        var startBeat = Math.floor(importSheet.firstNote.time);
+        var adjustedTime = note.time - startBeat + this.beatHoveredOver;
+        var adjustedNote = {time: adjustedTime, type: note.type}
+        return adjustedNote;
+    }
+
+    this.drawNoteLine = function(index)
+    {
+        y = this.calculateNoteTypeY(index);
+        if(this.highlightedNoteLine == index)
+        {
+            this.context.strokeStyle = HIGHLIGHT_COLOUR;
+        }
+        else
+        {
+            this.context.strokeStyle = MAIN_COLOUR;
+        }
+        this.drawLine(0, y, this.canvas.width, y, 1);
+    }
+
+    this.drawTimeMarker = function()
+    {
+        var time = Date.now();
+        var x = (((time - startTime) / 1000.0) / this.calculateDuration()) *
+            this.canvas.width;
+        this.drawLine(x, 0, x, this.canvas.height, 2);
+    }
+
+    this.mouseMove = function(event)
+    {
+        var x = this.xInCanvas(event.clientX);
+        var y = this.yInCanvas(event.clientY);
+        if(mode == ADD_NOTE)
+        {
+            this.highlightedNoteLine = this.closeToNoteLine(y);
+        }
+        else if(mode == REMOVE_NOTE)
+        {
+            this.highlightedNote = this.withinNote(x, y);
+        }
+        else if(mode == RESIZE && event.buttons == 1 &&
+                this.selectedNotes.length > 0)
+        {
+            this.saveUndoStateBeforeNotesAreMoved();
+            for(var note of this.selectedNotes)
+            {
+                var deltaX = event.movementX *
+                    ((note.time - this.firstNote.time) /
+                     (this.clickedNote.time - this.firstNote.time));
+                this.moveNote(note, deltaX);
+            }
+        }
+        else if(event.buttons == 1 && this.selectedNotes.length > 0)
+        {
+            this.saveUndoStateBeforeNotesAreMoved();
+            this.moveSelectedNotes(event.movementX);
+        }
+        else
+        {
+            this.updateSelection(x, y);
+        }
+        this.beatHoveredOver = this.getBeatContainingX(x);
+    }
+
+    this.closeToNoteLine = function(y)
     {
         var closestNoteLine;
         var closestDistance;
-        for(var i = 0; i < Object.keys(score.noteTypes).length; i ++)
+        for(var i = 0; i < Object.keys(this.score.noteTypes).length; i ++)
         {
-            var noteLineY = calculateNoteTypeY(i);
+            var noteLineY = this.calculateNoteTypeY(i);
             var distance = Math.abs(noteLineY - y);
             if(distance < CLOSE_DISTANCE)
             {
@@ -236,197 +408,151 @@ function Sheet(canvas)
         return closestNoteLine;
     }
 
-    function withinNote(x, y)
+    this.mouseDown = function(event)
     {
-        for(var note of score.notes)
-        {
-            var a = Math.abs(x - calculateNoteX(note));
-            var b = Math.abs(y - calculateNoteY(note));
-            var distance = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-            if(distance < NOTE_SIZE)
-            {
-                return note;
-            }
-        }
-    }
-
-    function saveUndoStateBeforeNotesAreMoved()
-    {
-        if(!notesMoved)
-        {
-            notesMoved = true;
-            saveUndoState();
-        }
-    }
-
-    function moveNote(note, deltaX)
-    {
-        note.time += calculateNoteTime(deltaX);
-    }
-
-    function calculateNoteTime(x)
-    {
-        return (x / canvas.width) * score.beats;
-    }
-
-    function moveSelectedNotes(deltaX)
-    {
-        for(var note of selectedNotes)
-        {
-            moveNote(note, deltaX);
-        }
-    }
-
-    function mouseDown(event)
-    {
-        var x = xInCanvas(event.clientX);
-        var y = yInCanvas(event.clientY);
+        var x = this.xInCanvas(event.clientX);
+        var y = this.yInCanvas(event.clientY);
         if(mode == ADD_NOTE)
         {
-            if(highlightedNoteLine == null)
+            if(this.highlightedNoteLine == null)
             {
                 mode = null;
             }
             else
             {
-                var time = xToTime(x);
-                addNote(time, highlightedNoteLine);
+                var time = this.xToTime(x);
+                this.addNote({time: time, type: this.highlightedNoteLine});
                 updateScoreInSoundLoop();
             }
         }
         else if(mode == REMOVE_NOTE)
         {
-            if(highlightedNote == null)
+            if(this.highlightedNote == null)
             {
                 mode = null;
             }
             else
             {
-                removeNotes([highlightedNote]);
+                this.removeNotes([this.highlightedNote]);
             }
+        }
+        else if(importSheet.selectedNotes.length > 0)
+        {
+            this.addImportedNotes();
+            updateScoreInSoundLoop();
+            importSheet.selectedNotes = [];
         }
         else
         {
-            clickedNote = withinNote(x, y);
-            if(clickedNote != null)
-            {
-                if(selectedNotes.indexOf(clickedNote) == -1)
-                {
-                    if(!event.shiftKey)
-                    {
-                        selectedNotes = [];
-                    }
-                    selectNote(clickedNote);
-                }
-            }
-            else
-            {
-                selectedNotes = [];
-                selectionStartPoint = {x: x, y: y};
-                selectionEndPoint = {x: x, y: y};
-            }
+            this.startSelection(event);
         }
     }
 
-    function xToTime(x)
-    {
-        var time = x  * score.beats / canvas.width;
-        return time;
-    }
-
-    function addNote(time, type)
+    this.addNote = function(note)
     {
         saveUndoState();
-        var note = {time: time, type: type};
-        score.notes.push(note);
-        var path = score.noteTypes[type];
+        this.score.notes.push(note);
+        var path = this.score.noteTypes[note.type];
         addSound(path);
     }
 
-    this.addNote = function(time, type)
-    {
-        addNote(time, type);
-    }
-
-    function removeNotes(notes)
+    this.removeNotes = function(notes)
     {
         saveUndoState();
-        for(note of notes)
+        for(var note of notes)
         {
-            var index = score.notes.indexOf(note);
-            score.notes.splice(index, 1);
+            var index = this.score.notes.indexOf(note);
+            this.score.notes.splice(index, 1);
             sounds.splice(index, 1);
         }
         updateScoreInSoundLoop();
         updateJson();
     }
 
-    function selectNote(note)
+    this.addImportedNotes = function()
     {
-        if(selectedNotes.indexOf(note) == -1)
+        var startBeat = Math.floor(importSheet.firstNote.time);
+        for(var note of importSheet.selectedNotes)
         {
-            selectedNotes.push(note);
+            var adjustedNote = this.adjustNote(note);
+            this.addNote(adjustedNote);
         }
     }
 
-    function mouseUp(event)
+    this.saveUndoStateBeforeNotesAreMoved = function()
     {
-        if(selectionStartPoint != null)
+        if(!this.notesMoved)
         {
-            selectNotesInRectangle();
-            selectionStartPoint = null;
-            selectionEndPoint = null;
+            this.notesMoved = true;
+            saveUndoState();
         }
-        if(notesMoved)
+    }
+
+    this.moveNote = function(note, deltaX)
+    {
+        note.time += this.calculateNoteTime(deltaX);
+    }
+
+    this.mouseUp = function(event)
+    {
+        if(this.selectionStartPoint != null)
+        {
+            this.selectNotesInRectangle();
+            this.selectionStartPoint = null;
+            this.selectionEndPoint = null;
+        }
+        if(this.notesMoved)
         {
             updateScoreInSoundLoop();
             updateJson();
-            notesMoved = false;
+            this.notesMoved = false;
         }
-        clickedNote = null;
-    }
-
-    function selectNotesInRectangle()
-    {
-        var firstNoteTime = null;
-        for(var note of score.notes)
-        {
-            var x = calculateNoteX(note);
-            var y = calculateNoteY(note);
-            var minX = Math.min(selectionStartPoint.x, selectionEndPoint.x);
-            var maxX = Math.max(selectionStartPoint.x, selectionEndPoint.x);
-            var minY = Math.min(selectionStartPoint.y, selectionEndPoint.y);
-            var maxY = Math.max(selectionStartPoint.y, selectionEndPoint.y);
-            if(x > minX && x < maxX && y > minY && y < maxY)
-            {
-                selectNote(note);
-                if(firstNoteTime == null || note.time < firstNoteTime)
-                {
-                    firstNote = note;
-                    firstNoteTime = note.time;
-                }
-            }
-        }
+        this.clickedNote = null;
     }
 
     this.removeSelectedNotes = function()
     {
-        removeNotes(selectedNotes);
-        selectedNotes = [];
+        this.removeNotes(this.selectedNotes);
+        this.selectedNotes = [];
+    }
+}
+
+function ImportSheet(canvas)
+{
+    Sheet.call(this, canvas);
+    this.canvas.sheet = this;
+    this.canvas.addEventListener("mousemove",
+                                 function(e){this.sheet.mouseMove(e)},
+                                 false);
+    this.canvas.addEventListener("mousedown",
+                                 function(e){this.sheet.mouseDown(e)},
+                                 false);
+    this.canvas.addEventListener("mouseup",
+                                 function(e){this.sheet.mouseUp(e)},
+                                 false);
+
+    this.mouseMove = function(event)
+    {
+        var x = this.xInCanvas(event.clientX);
+        var y = this.yInCanvas(event.clientY);
+        this.updateSelection(x, y);
+        this.draw();
     }
 
-    this.calculateDuration = function()
+    this.mouseDown = function(event)
     {
-        return score.beats / score.bpm * 60;
+        var x = this.xInCanvas(event.clientX);
+        var y = this.yInCanvas(event.clientY);
+        this.startSelection(event);
     }
 
-    this.setScore = function(newScore)
+    this.mouseUp = function(event)
     {
-        score = newScore;
-    }
-
-    this.getScore = function()
-    {
-        return score;
+        if(this.selectionStartPoint != null)
+        {
+            this.selectNotesInRectangle();
+            this.selectionStartPoint = null;
+            this.selectionEndPoint = null;
+        }
     }
 }
