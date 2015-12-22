@@ -239,7 +239,7 @@ function toggleMode(newMode, cursor)
     {
         console.log("Entering mode:", newMode)
         mode = newMode;
-        mainSheet.canvas.cursor = cursor;
+        mainSheet.canvas.style.cursor = cursor;
     }
 }
 
