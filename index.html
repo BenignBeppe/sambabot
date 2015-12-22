@@ -12,7 +12,7 @@
       <button id="addButton" onclick="toggleAddNoteMode()">Add note</button>
       <button id="removeButton" onclick="toggleRemoveNoteMode()">Remove note</button>
       <button id="resizeButton" onclick="toggleResizeMode()">Resize</button>
-      <button onclick="importFromScore()">Import</button>
+      <button onclick="showImportDialogue()">Import</button>
     </div>
     <div>
       <button id="playButton" onclick="play()">Play</button>
@@ -26,15 +26,17 @@
     </div>
     <div>
       <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
-      <button id="loadJsonButton" onclick="loadJson()">Load</button>
+      <button id="loadJsonButton" onclick="loadJsonFromRepresentation()">Load</button>
     </div>
     <div id="overlay" class="overlay"></div>
     <div id="importDialogue" class="popup">
-      <h1>Import Notes</h1>
+      <h1>Import</h1>
       <canvas id="importScoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
       <h2>Select score to import from</h2>
       <ul id="dialogueScoreList" style="list-style-type: none"></ul>
-      <button onclick="closeDialogue()">Close</button>
+      <button onclick="importScore()" title="Import entire score, replacing the current one.">Import score</button>
+      <button onclick="importNotes()" title="Import notes selected in the sheet above. After the dialogue closes, select where in the score you want to place the imported notes.">Import selected notes</button>
+      <button onclick="cancelDialogue()" title="Close dialogue without importing anything.">Cancel</button>
     </div>
   </body>
 </html>

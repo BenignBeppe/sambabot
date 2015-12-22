@@ -12,6 +12,7 @@ function Sheet(canvas)
     this.selectedNotes = [];
     this.clickedNote;
     this.highlightedNote;
+    this.firstNote;
 
     this.draw = function()
     {
@@ -296,7 +297,6 @@ function MainSheet(canvas)
 {
     Sheet.call(this, canvas);
     this.highlightedNoteLine;
-    this.firstNote;
     this.notesMoved = false;
     this.beatHoveredOver;
     this.canvas.sheet = this;
@@ -316,7 +316,7 @@ function MainSheet(canvas)
         this.superDraw();
         if(importSheet.selectedNotes.length > 0)
         {
-            for(var note of importSheet.selectedNotes)
+            for(var note of importedNotes)
             {
                 var adjustedNote = this.adjustNote(note);
                 this.drawNote(adjustedNote, IMPORT_COLOUR);

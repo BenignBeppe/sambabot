@@ -26,6 +26,7 @@ var animate = true;
 var shownDialogue;
 var renderMode;
 var importSheet;
+var importedNotes = [];
 
 function onLoad()
 {
@@ -33,8 +34,6 @@ function onLoad()
     initSoundLoop();
     mainSheet = new MainSheet(document.getElementById("scoreCanvas"));
     loadInitialScore();
-    updateScoreInSoundLoop();
-    updateSounds();
     clickSound = new Audio("sounds/repinique-head.ogg");
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
@@ -105,7 +104,7 @@ function loadInitialScore()
     saveUndoState();
 }
 
-function loadJson()
+function loadJsonFromRepresentation()
 {
     mainSheet.score = JSON.parse(jsonRepresentation.value);
     updateScoreInSoundLoop();
@@ -118,11 +117,18 @@ function loadScoreFromUrl()
     var scoreName = getSearchParameter("score");
     if(scoreName != null)
     {
-        mainSheet.score = readScoreFromFile(scoreName);
-        updateJson();
+        loadScore(readScoreFromFile(scoreName));
         return true;
     }
     return false;
+}
+
+function loadScore(score)
+{
+    mainSheet.score = score;
+    updateJson();
+    updateScoreInSoundLoop();
+    updateSounds();
 }
 
 function readScoreFromFile(scoreName)
@@ -274,7 +280,7 @@ function record()
     postMessageToSoundLoop("playIntro");
 }
 
-function importFromScore()
+function showImportDialogue()
 {
     var scoreList = document.getElementById("dialogueScoreList");
     clearChildren(scoreList);
@@ -317,11 +323,28 @@ function showDialogue(id)
     return dialogue;
 }
 
+function importScore()
+{
+    closeDialogue();
+    loadScore(importSheet.score);
+}
+
+function importNotes()
+{
+    closeDialogue();
+    importedNotes = this.importSheet.selectedNotes;
+}
+
 function closeDialogue()
 {
     document.getElementById("overlay").style.visibility = "hidden";
     document.getElementById(shownDialogue).style.visibility = "hidden";
     shownDialogue = null;
+}
+
+function cancelDialogue()
+{
+    closeDialogue();
 }
 
 function updateBpm(event)
