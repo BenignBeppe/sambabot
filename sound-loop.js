@@ -8,40 +8,43 @@ var looping = false;
 
 function frame(playIntro)
 {
-    beatTime = ((Date.now() - startTime) * score.bpm / 60) / 1000.0;
-    if(playIntro)
+    if(score != null)
     {
-        if(beatTime >= clickList[0])
+        beatTime = ((Date.now() - startTime) * score.bpm / 60) / 1000.0;
+        if(playIntro)
         {
-            postMessageToMain("playClick");
-            clickList.shift();
-        }
-        if(beatTime >= numberOfIntroBeats)
-        {
-            playScore();
-        }
-    }
-    else
-    {
-        for(var i = 0; i < score.notes.length; i ++)
-        {
-            var note = score.notes[i];
-            if(!note.played && beatTime >= note.time)
+            if(beatTime >= clickList[0])
             {
-                postMessageToMain("playNote", i);
-                note.played = true;
+                postMessageToMain("playClick");
+                clickList.shift();
             }
-        }
-        if(beatTime >= score.beats)
-        {
-            if(looping)
+            if(beatTime >= numberOfIntroBeats)
             {
                 playScore();
             }
-            else
+        }
+        else
+        {
+            for(var i = 0; i < score.notes.length; i ++)
             {
-                clearInterval(intervalId);
-                postMessageToMain("scoreDone");
+                var note = score.notes[i];
+                if(!note.played && beatTime >= note.time)
+                {
+                    postMessageToMain("playNote", i);
+                    note.played = true;
+                }
+            }
+            if(beatTime >= score.beats)
+            {
+                if(looping)
+                {
+                    playScore();
+                }
+                else
+                {
+                    clearInterval(intervalId);
+                    postMessageToMain("scoreDone");
+                }
             }
         }
     }
@@ -91,9 +94,12 @@ onmessage = function(message)
 function playScore()
 {
     console.log("Starting loop.");
-    for(note of score.notes)
+    if(score != null)
     {
-        note.played = false;
+        for(note of score.notes)
+        {
+            note.played = false;
+        }
     }
     startTime = Date.now();
     postMessageToMain("startTime", startTime);

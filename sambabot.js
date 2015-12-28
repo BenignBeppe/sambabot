@@ -33,7 +33,8 @@ function onLoad()
     jsonRepresentation = document.getElementById("jsonRepresentation");
     initSoundLoop();
     mainSheet = new MainSheet(document.getElementById("scoreCanvas"));
-    loadInitialScore();
+    loadScoreFromUrl();
+    saveUndoState();
     clickSound = new Audio("sounds/repinique-head.ogg");
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
@@ -75,33 +76,6 @@ function updateSounds()
         var sound = new Audio(mainSheet.score.noteTypes[note.type]);
         sounds.push(sound);
     }
-}
-
-function loadInitialScore()
-{
-    if(!loadScoreFromUrl())
-    {
-        mainSheet.score = {
-            beats: 8,
-            bpm: 80,
-            noteTypes: [
-                "sounds/repinique-head.ogg",
-                "sounds/repinique-rimshot.ogg",
-                "sounds/repinique-hand.ogg"
-            ],
-            notes: [
-                {time: 0.0, type: 0},
-                {time: 0.25, type: 1},
-                {time: 0.5, type: 1},
-                {time: 0.75, type: 2},
-                {time: 1.0, type: 0},
-                {time: 1.25, type: 1},
-                {time: 1.5, type: 1},
-                {time: 1.75, type: 2}
-            ]};
-        updateJson();
-    }
-    saveUndoState();
 }
 
 function loadJsonFromRepresentation()
@@ -272,6 +246,7 @@ function playNote(noteIndex)
 function stop()
 {
     postMessageToSoundLoop("stop");
+    startTime = null;
 }
 
 function record()
