@@ -352,6 +352,7 @@ function MainSheet(canvas)
         var time = Date.now();
         var x = (((time - startTime) / 1000.0) / this.calculateDuration()) *
             this.canvas.width;
+        this.context.strokeStyle = MAIN_COLOUR;
         this.drawLine(x, 0, x, this.canvas.height, 2);
     }
 
