@@ -36,6 +36,9 @@ function onLoad()
     loadScoreFromUrl();
     saveUndoState();
     clickSound = new Audio("sounds/repinique-head.ogg");
+    var beatsInput = document.getElementById("beatsInput");
+    beatsInput.addEventListener("input", updateBeats, false);
+    beatsInput.value = mainSheet.score.beats;
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
     bpmInput.value = mainSheet.score.bpm;
@@ -80,10 +83,8 @@ function updateSounds()
 
 function loadJsonFromRepresentation()
 {
-    mainSheet.score = JSON.parse(jsonRepresentation.value);
-    updateScoreInSoundLoop();
-    updateSounds();
-    bpmInput.value = mainSheet.score.bpm;
+    var score = JSON.parse(jsonRepresentation.value);
+    loadScore(score, false);
 }
 
 function loadScoreFromUrl()
@@ -97,10 +98,15 @@ function loadScoreFromUrl()
     return false;
 }
 
-function loadScore(score)
+function loadScore(score, shouldJsonUpdate)
 {
     mainSheet.score = score;
-    updateJson();
+    beatsInput.value = mainSheet.score.beats;
+    bpmInput.value = mainSheet.score.bpm;
+    if(shouldJsonUpdate || shouldJsonUpdate == null)
+    {
+        updateJson();
+    }
     updateScoreInSoundLoop();
     updateSounds();
 }
@@ -320,6 +326,13 @@ function closeDialogue()
 function cancelDialogue()
 {
     closeDialogue();
+}
+
+function updateBeats(event)
+{
+    mainSheet.score.beats = parseFloat(event.target.value);
+    updateScoreInSoundLoop();
+    updateJson();
 }
 
 function updateBpm(event)
