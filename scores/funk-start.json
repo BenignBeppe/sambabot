@@ -1,0 +1,64 @@
+{
+    "beats": 8,
+    "bpm": 90,
+    "noteTypes": [
+        "sounds/repinique-head.ogg",
+        "sounds/repinique-rimshot.ogg",
+        "sounds/repinique-hand.ogg",
+        "sounds/repinique-rod.ogg"
+    ],
+    "notes": [
+        {
+            "time": 0.00043226919758413405,
+            "type": 3
+        },
+        {
+            "time": 0.288,
+            "type": 2
+        },
+        {
+            "time": 0.5148214388904946,
+            "type": 3
+        },
+        {
+            "time": 0.7597012424154864,
+            "type": 3
+        },
+        {
+            "time": 1.0397489164981213,
+            "type": 2
+        },
+        {
+            "time": 1.2953221612250798,
+            "type": 3
+        },
+        {
+            "time": 1.5209537705865372,
+            "type": 3
+        },
+        {
+            "time": 1.7765270153134922,
+            "type": 2
+        },
+        {
+            "time": 2.0427937012424153,
+            "type": 0
+        },
+        {
+            "time": 2.5058197052874913,
+            "type": 0
+        },
+        {
+            "time": 2.7752944235770007,
+            "type": 0
+        },
+        {
+            "time": 3.496032360589425,
+            "type": 0
+        },
+        {
+            "time": 3.9890000000000003,
+            "type": 1
+        }
+    ]
+}
