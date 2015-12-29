@@ -417,7 +417,7 @@ function MainSheet(canvas)
         {
             if(this.highlightedNoteLine == null)
             {
-                mode = null;
+                toggleAddNoteMode();
             }
             else
             {
