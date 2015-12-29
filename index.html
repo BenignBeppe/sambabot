@@ -36,6 +36,7 @@
       <h1>Import</h1>
       <canvas id="importScoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
       <h2>Select score to import from</h2>
+      URL: <input id="importScoreUrlInput" type="text" /><button onclick="loadImportScoreFromUrl()">Load</button>
       <ul id="dialogueScoreList" style="list-style-type: none"></ul>
       <button onclick="importScore()" title="Import entire score, replacing the current one.">Import score</button>
       <button onclick="importNotes()" title="Import notes selected in the sheet above. After the dialogue closes, select where in the score you want to place the imported notes.">Import selected notes</button>

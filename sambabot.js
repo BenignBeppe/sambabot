@@ -33,7 +33,7 @@ function onLoad()
     jsonRepresentation = document.getElementById("jsonRepresentation");
     initSoundLoop();
     mainSheet = new MainSheet(document.getElementById("scoreCanvas"));
-    loadScoreFromUrl();
+    loadScoreFromParameters();
     saveUndoState();
     clickSound = new Audio("sounds/repinique-head.ogg");
     var beatsInput = document.getElementById("beatsInput");
@@ -87,7 +87,15 @@ function loadJsonFromRepresentation()
     loadScore(score, false);
 }
 
-function loadScoreFromUrl()
+function loadImportScoreFromUrl()
+{
+    var urlInput = document.getElementById("importScoreUrlInput");
+    var url = urlInput.value;
+    var score = JSON.parse(readFile(url));
+    loadImportScore(score);
+}
+
+function loadScoreFromParameters()
 {
     var scoreName = getSearchParameter("score");
     if(scoreName != null)
@@ -291,6 +299,11 @@ function selectImportScore(event)
 {
     var scoreName = this.innerHTML;
     var score = readScoreFromFile(scoreName);
+    loadImportScore(score);
+}
+
+function loadImportScore(score)
+{
     importSheet.score = score;
     importSheet.draw();
 }
