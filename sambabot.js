@@ -5,8 +5,6 @@ var REMOVE_NOTE = "REMOVE_NOTE";
 var RESIZE = "RESIZE";
 var RECORD = "RECORD";
 var FPS = 30;
-var REQUEST_ANIMATION_FRAME = "REQUEST_ANIMATION_FRAME"
-var INTERVAL = "INTERVAL"
 
 var mainSheet;
 var startTime;
@@ -22,11 +20,10 @@ var recordKeys = {
 }
 var undoHistory = [];
 var notesMoved = false;
-var animate = true;
 var shownDialogue;
-var renderMode;
 var importSheet;
 var importedNotes = [];
+var animateIntervalId;
 
 function onLoad()
 {
@@ -43,24 +40,10 @@ function onLoad()
     bpmInput.addEventListener("input", updateBpm, false);
     bpmInput.value = mainSheet.score.bpm;
     var animateCheckbox = document.getElementById("animateCheckbox");
-    animateCheckbox.addEventListener("change", function(e){
-        animate=e.target.checked}, false);
+    updateAnimate(animateCheckbox.checked);
     addEventListener("keydown", keyDown, false);
     addEventListener("keyup", keyUp, false);
     updateJson();
-    renderMode = INTERVAL;
-    if(renderMode == INTERVAL)
-    {
-        setInterval(draw, 1000 / FPS);
-    }
-    else if(renderMode == REQUEST_ANIMATION_FRAME)
-    {
-        window.requestAnimationFrame(draw);
-    }
-    else
-    {
-        console.error("Uknown render mode:", renderMode);
-    }
     importSheet = new ImportSheet(
         document.getElementById("importScoreCanvas"));
 }
@@ -106,6 +89,19 @@ function loadScoreFromParameters()
     return false;
 }
 
+function getSearchParameter(parameterName)
+{
+    var parameters = location.search.substring(1).split("&");
+    for(var parameter of parameters)
+    {
+        var keyAndValue = parameter.split("=");
+        if(keyAndValue[0] == parameterName)
+        {
+            return keyAndValue[1];
+        }
+    }
+}
+
 function loadScore(score, shouldJsonUpdate)
 {
     mainSheet.score = score;
@@ -145,17 +141,21 @@ function saveUndoState()
     console.log("Saving undo state. # of states now:", undoHistory.length);
 }
 
-function getSearchParameter(parameterName)
+function updateAnimate(animate)
 {
-    var parameters = location.search.substring(1).split("&");
-    for(var parameter of parameters)
+    if(animate)
     {
-        var keyAndValue = parameter.split("=");
-        if(keyAndValue[0] == parameterName)
-        {
-            return keyAndValue[1];
-        }
+        animateIntervalId = setInterval(draw, 1000 / FPS);
     }
+    else
+    {
+        clearInterval(animateIntervalId);
+    }
+}
+
+function toggleAnimate(event)
+{
+    updateAnimate(event.target.checked);
 }
 
 function updateScoreInSoundLoop()
@@ -412,13 +412,5 @@ function keyUp(event)
 
 function draw()
 {
-    if(animate)
-    {
-        mainSheet.draw();
-        if(renderMode == REQUEST_ANIMATION_FRAME)
-        {
-            mainSheet.draw();
-            window.requestAnimationFrame(draw);
-        }
-    }
+    mainSheet.draw();
 }
