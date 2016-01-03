@@ -374,7 +374,8 @@ function keyDown(event)
         {
             var time = ((Date.now() - startTime) / 1000) /
                 mainSheet.calculateDuration() * mainSheet.score.beats;
-            mainSheet.addNote(time, recordKeys[event.key].noteType);
+            var note = {time: time, type: recordKeys[event.key].noteType};
+            mainSheet.addNote(note);
             recordKeys[event.key].down = true;
         }
     }
