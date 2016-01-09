@@ -9,23 +9,23 @@
     <canvas id="scoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
     <br />
     <div>
-      <button id="addButton" onclick="toggleAddNoteMode()">Add note</button>
-      <button id="removeButton" onclick="toggleRemoveNoteMode()">Remove note</button>
-      <button id="resizeButton" onclick="toggleResizeMode()">Resize</button>
-      <button onclick="showImportDialogue()">Import</button>
-    </div>
-    <div>
       <button id="playButton" onclick="play()">Play</button>
       <button id="loopButton" onclick="play(true)">Play looped</button>
       <button id="stopButton" onclick="stop()">Stop</button>
       <button id="recordButton" onclick="record()">Record</button>
+      <input id="animateCheckbox" type="checkbox" onchange="toggleAnimate(event)" checked="checked" />Animate
+    </div>
+    <div>
+      <button id="addButton" onclick="toggleAddNoteMode()">Add note</button>
+      <button id="removeButton" onclick="toggleRemoveNoteMode()">Remove note</button>
+      <button id="resizeButton" onclick="toggleResizeMode()">Resize</button>
     </div>
     <div>
       Beats: <input id="beatsInput" type="number" min="1" style="width: 4em" />
       BPM: <input id="bpmInput" type="number" min="1" style="width: 4em" />
     </div>
     <div>
-      <input id="animateCheckbox" type="checkbox" onchange="toggleAnimate(event)"/>Animate
+      <button onclick="showImportDialogue()">Import</button>
     </div>
     <div>
       <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
