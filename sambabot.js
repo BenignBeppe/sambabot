@@ -251,9 +251,9 @@ function playNote(noteIndex)
 {
     var note = mainSheet.score.notes[noteIndex];
     var sound = sounds[noteIndex];
-    var expectedTime = Date.now() - startTime;
-    var actualTime = note.time * (60 / mainSheet.score.bpm);
-    console.log("> playNote():", actualTime - expectedTime / 1000.0);
+    var expectedTime = note.time * (60 / mainSheet.score.bpm);
+    var actualTime = (Date.now() - startTime) / 1000.0;
+    console.log("> playNote():", actualTime - expectedTime);
     sound.play();
 }
 
