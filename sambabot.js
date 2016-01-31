@@ -166,13 +166,17 @@ function updateScoreInSoundLoop()
 
 function updateNoteTypeButtons()
 {
-    var scoreList = document.getElementById("noteTypeList");
-    var spacing = scoreList.clientHeight / mainSheet.score.noteTypes.length /
-        2;
-    for(var noteType of mainSheet.score.noteTypes)
+    var noteTypeList = document.getElementById("noteTypeList");
+    var spacing = noteTypeList.clientHeight /
+        mainSheet.score.noteTypes.length / 2;
+    clearChildren(noteTypeList);
+    for(var i = 0; i < mainSheet.score.noteTypes.length; i ++)
     {
         var button = document.createElement("button");
+        var noteType = mainSheet.score.noteTypes[i];
         button.innerHTML = getNoteTypeNameFromPath(noteType);
+        button.noteTypeIndex = i;
+        button.addEventListener("click", editNoteType);
         var item = document.createElement("li");
         noteTypeList.appendChild(item);
         item.appendChild(button);
@@ -184,6 +188,30 @@ function updateNoteTypeButtons()
 function getNoteTypeNameFromPath(noteTypePath)
 {
     return noteTypePath.replace(/.*\/(.*)\..*/, "$1")
+}
+
+function editNoteType(event)
+{
+    showEditNoteTypeDialogue(this.noteTypeIndex);
+}
+
+function showEditNoteTypeDialogue(noteTypeIndex)
+{
+    document.getElementById("editNoteTypeName").innerHTML =
+        getNoteTypeNameFromPath(mainSheet.score.noteTypes[noteTypeIndex]);
+    var noteTypeList = document.getElementById("editNoteTypeList");
+    var noteTypes = readFile("note-type-list.txt").trim().split("\n");
+    populateButtonList(noteTypeList, noteTypes, changeNoteType, noteTypeIndex);
+    showDialogue("editNoteTypeDialogue");
+}
+
+function changeNoteType(event, noteTypeIndex)
+{
+    var newNoteType = "sounds/" + event.target.innerHTML + ".ogg";
+    mainSheet.changeNoteType(noteTypeIndex[0], newNoteType);
+    updateJson();
+    updateSounds();
+    updateNoteTypeButtons();
 }
 
 function onSoundLoopMessage(message)
@@ -295,17 +323,8 @@ function record()
 function showImportDialogue()
 {
     var scoreList = document.getElementById("dialogueScoreList");
-    clearChildren(scoreList);
-    var scores = readFile("scores-list.txt").trim().split("\n");
-    for(var score of scores)
-    {
-        var button = document.createElement("button");
-        button.innerHTML = score;
-        button.addEventListener("click", selectImportScore);
-        var item = document.createElement("li");
-        scoreList.appendChild(item);
-        item.appendChild(button);
-    }
+    var scores = readFile("score-list.txt").trim().split("\n");
+    populateButtonList(scoreList, scores, selectImportScore);
     importSheet.draw();
     var dialogue = showDialogue("importDialogue");
 }
@@ -318,9 +337,24 @@ function clearChildren(node)
     }
 }
 
+function populateButtonList(listElement, items, onClickFunction, ...args)
+{
+    clearChildren(listElement);
+    for(var item of items)
+    {
+        var button = document.createElement("button");
+        button.innerHTML = item;
+        button.addEventListener("click", function(event)
+                                {onClickFunction(event, args)});
+        var itemElement = document.createElement("li");
+        listElement.appendChild(itemElement);
+        itemElement.appendChild(button);
+    }
+}
+
 function selectImportScore(event)
 {
-    var scoreName = this.innerHTML;
+    var scoreName = event.target.innerHTML;
     var score = readScoreFromFile(scoreName);
     loadImportScore(score);
 }

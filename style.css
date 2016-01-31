@@ -25,13 +25,17 @@
     padding: 5px;
 }
 
-.noteStyleList
+.buttonList
 {
     list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.noteTypeList
+{
     display: inline-block;
     height: 200px;
     top: 0px;
     vertical-align: top;
-    margin: 0;
-    padding: 0;
 }

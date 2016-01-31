@@ -516,6 +516,11 @@ function MainSheet(canvas)
         this.removeNotes(this.selectedNotes);
         this.selectedNotes = [];
     }
+
+    this.changeNoteType = function(noteTypeIndex, newNoteType)
+    {
+        this.score.noteTypes[noteTypeIndex] = newNoteType;
+    }
 }
 
 function ImportSheet(canvas)

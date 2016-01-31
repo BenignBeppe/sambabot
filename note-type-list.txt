@@ -1,0 +1,5 @@
+repinique-hand
+repinique-head
+repinique-rimshot
+repinique-rimshot-soft
+repinique-rod

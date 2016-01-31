@@ -2,7 +2,8 @@
 
 DESTINATION_PATH=~/Dropbox/Public/sambabot
 
-ls -1B scores | sed -r "s/\.json//g" > scores-list.txt
+ls -1B scores | sed -r "s/\.json//g" > score-list.txt
+ls -1B sounds | sed -r "s/\.ogg//g" > note-type-list.txt
 for d in $(find . -type d -not -path "." -not -path "*/.*")
 do
     mkdir -v $DESTINATION_PATH/$d

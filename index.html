@@ -7,7 +7,7 @@
   </head>
   <body onload="onLoad()">
     <canvas id="scoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
-    <ul id="noteTypeList" class="noteStyleList"></ul>
+    <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
     <br />
     <div>
       <button id="playButton" onclick="play()">Play</button>
@@ -38,9 +38,16 @@
       <canvas id="importScoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
       <h2>Select score to import from</h2>
       URL: <input id="importScoreUrlInput" type="text" /><button onclick="loadImportScoreFromUrl()">Load</button>
-      <ul id="dialogueScoreList" style="list-style-type: none"></ul>
+      <ul id="dialogueScoreList" class="buttonList"></ul>
       <button onclick="importScore()" title="Import entire score, replacing the current one.">Import score</button>
       <button onclick="importNotes()" title="Import notes selected in the sheet above. After the dialogue closes, select where in the score you want to place the imported notes.">Import selected notes</button>
+      <button onclick="cancelDialogue()" title="Close dialogue without importing anything.">Cancel</button>
+    </div>
+    <div id="editNoteTypeDialogue" class="popup">
+      <h1>Edit Note Type</h1>
+      <h2 id="editNoteTypeName"></h2>
+      URL: <input id="editNoteTypeUrl" type="text" /><button onclick="loadNoteTypeFromUrl()">Load</button>
+      <ul id="editNoteTypeList" class="buttonList"></ul>
       <button onclick="cancelDialogue()" title="Close dialogue without importing anything.">Cancel</button>
     </div>
   </body>
