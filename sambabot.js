@@ -57,7 +57,7 @@ function initSoundLoop()
 function updateSounds()
 {
     sounds = [];
-    for(note of mainSheet.score.notes)
+    for(var note of mainSheet.score.notes)
     {
         var sound = new Audio(mainSheet.score.noteTypes[note.type]);
         sounds.push(sound);
@@ -113,6 +113,7 @@ function loadScore(score, shouldJsonUpdate)
     }
     updateScoreInSoundLoop();
     updateSounds();
+    updateNoteTypeButtons()
 }
 
 function readScoreFromFile(scoreName)
@@ -161,6 +162,28 @@ function toggleAnimate(event)
 function updateScoreInSoundLoop()
 {
     postMessageToSoundLoop("score", mainSheet.score);
+}
+
+function updateNoteTypeButtons()
+{
+    var scoreList = document.getElementById("noteTypeList");
+    var spacing = scoreList.clientHeight / mainSheet.score.noteTypes.length /
+        2;
+    for(var noteType of mainSheet.score.noteTypes)
+    {
+        var button = document.createElement("button");
+        button.innerHTML = getNoteTypeNameFromPath(noteType);
+        var item = document.createElement("li");
+        noteTypeList.appendChild(item);
+        item.appendChild(button);
+        var buttonSpacing = spacing - button.clientHeight / 2;
+        item.style.margin = buttonSpacing + "px 0px 0px 0px";
+    }
+}
+
+function getNoteTypeNameFromPath(noteTypePath)
+{
+    return noteTypePath.replace(/.*\/(.*)\..*/, "$1")
 }
 
 function onSoundLoopMessage(message)

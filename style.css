@@ -24,3 +24,14 @@
     visibility: hidden;
     padding: 5px;
 }
+
+.noteStyleList
+{
+    list-style-type: none;
+    display: inline-block;
+    height: 200px;
+    top: 0px;
+    vertical-align: top;
+    margin: 0;
+    padding: 0;
+}
