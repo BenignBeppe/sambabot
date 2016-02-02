@@ -319,8 +319,7 @@ function toggleMode(newMode, cursor)
     if(newMode == mode)
     {
         console.log("Exiting mode:", mode)
-        mode = null;
-        mainSheet.canvas.style.cursor = "default";
+        exitMode();
     }
     else
     {
@@ -328,6 +327,12 @@ function toggleMode(newMode, cursor)
         mode = newMode;
         mainSheet.canvas.style.cursor = cursor;
     }
+}
+
+function exitMode()
+{
+    mode = null;
+    mainSheet.canvas.style.cursor = "default";
 }
 
 function toggleRemoveNoteMode()
@@ -488,9 +493,13 @@ function keyDown(event)
         {
             mainSheet.removeSelectedNotes();
         }
-        if(event.key == "z" && event.ctrlKey)
+        else if(event.key == "z" && event.ctrlKey)
         {
             undo();
+        }
+        else if(event.key == "Escape")
+        {
+            mainSheet.deselectNotes();
         }
     }
 }

@@ -213,14 +213,14 @@ function Sheet(canvas)
             {
                 if(!event.shiftKey)
                 {
-                    this.selectedNotes = [];
+                    this.deselectNotes();
                 }
                 this.selectNote(this.clickedNote);
             }
         }
         else
         {
-            this.selectedNotes = [];
+            this.deselectNotes();
             this.selectionStartPoint = {x: x, y: y};
             this.selectionEndPoint = {x: x, y: y};
         }
@@ -546,7 +546,7 @@ function MainSheet(canvas)
     this.removeSelectedNotes = function()
     {
         this.removeNotes(this.selectedNotes);
-        this.selectedNotes = [];
+        this.deselectNotes();
     }
 
     this.changeNoteType = function(noteTypeIndex, newNoteType)
@@ -564,6 +564,11 @@ function MainSheet(canvas)
         this.score.noteTypes.push(noteType);
         updateJson();
         updateNoteTypeButtons();
+    }
+
+    this.deselectNotes = function()
+    {
+        this.selectedNotes = [];
     }
 }
 
