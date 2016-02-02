@@ -48,7 +48,13 @@
       <h2 id="editNoteTypeName"></h2>
       URL: <input id="editNoteTypeUrl" type="text" /><button onclick="loadNoteTypeFromUrl()">Load</button>
       <ul id="editNoteTypeList" class="buttonList"></ul>
-      <button onclick="cancelDialogue()" title="Close dialogue without importing anything.">Cancel</button>
+      <button onclick="cancelDialogue()" title="Close dialogue without changing anything.">Cancel</button>
+    </div>
+    <div id="addNoteTypeDialogue" class="popup">
+      <h1>Add Note Type</h1>
+      URL: <input id="addNoteTypeUrl" type="text" /><button onclick="loadNoteTypeFromUrl()">Load</button>
+      <ul id="addNoteTypeList" class="buttonList"></ul>
+      <button onclick="cancelDialogue()">Close</button>
     </div>
   </body>
 </html>

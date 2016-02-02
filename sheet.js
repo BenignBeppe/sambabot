@@ -519,7 +519,19 @@ function MainSheet(canvas)
 
     this.changeNoteType = function(noteTypeIndex, newNoteType)
     {
+        saveUndoState();
         this.score.noteTypes[noteTypeIndex] = newNoteType;
+        updateJson();
+        updateSounds();
+        updateNoteTypeButtons();
+    }
+
+    this.addNoteType = function(noteType)
+    {
+        saveUndoState();
+        this.score.noteTypes.push(noteType);
+        updateJson();
+        updateNoteTypeButtons();
     }
 }
 

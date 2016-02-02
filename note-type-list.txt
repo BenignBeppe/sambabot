@@ -1,5 +1,5 @@
-repinique-hand
-repinique-head
-repinique-rimshot
-repinique-rimshot-soft
-repinique-rod
+sounds/repinique-rimshot.ogg
+sounds/repinique-rod.ogg
+sounds/repinique-rimshot-soft.ogg
+sounds/repinique-hand.ogg
+sounds/repinique-head.ogg
