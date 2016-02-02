@@ -176,8 +176,10 @@ function updateNoteTypeButtons()
         var name = getNoteTypeNameFromPath(path);
         noteTypeNames.push(name);
     }
-    var buttons = populateButtonList(noteTypeList, noteTypeNames,
-                                     function(event) {showEditNoteTypeDialogue(event.target.noteTypeIndex);});
+    var buttons = populateButtonList(
+        noteTypeList, noteTypeNames,
+        function(event) {
+            showEditNoteTypeDialogue(event.target.noteTypeIndex);});
     for(var i = 0; i < buttons.length; i ++)
     {
         var button = buttons[i];
@@ -187,14 +189,17 @@ function updateNoteTypeButtons()
         var buttonSpacing = spacing - button.clientHeight / 2;
         button.style.margin = buttonSpacing + "px 0px 0px 0px";
     }
-    createButtonInNoteTypeList("+", showAddNoteTypeDialogue);
+    createAddNoteTypeButton();
 }
 
-function createButtonInNoteTypeList(label, onClickFunction)
+function createAddNoteTypeButton()
 {
     var button = document.createElement("button");
-    button.innerHTML = label;
-    button.addEventListener("click", onClickFunction);
+    var icon = document.createElement("i");
+    icon.classList.add("fa");
+    icon.classList.add("fa-plus");
+    button.appendChild(icon);
+    button.addEventListener("click", showAddNoteTypeDialogue);
     var item = document.createElement("li");
     var noteTypeList = document.getElementById("noteTypeList");
     noteTypeList.appendChild(item);
@@ -437,11 +442,6 @@ function closeDialogue()
     document.getElementById("overlay").style.visibility = "hidden";
     document.getElementById(shownDialogue).style.visibility = "hidden";
     shownDialogue = null;
-}
-
-function cancelDialogue()
-{
-    closeDialogue();
 }
 
 function updateBeats(event)

@@ -4,29 +4,30 @@
     <script src="sambabot.js"></script>
     <script src="sheet.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   </head>
   <body onload="onLoad()">
     <canvas id="scoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
     <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
     <br />
     <div>
-      <button id="playButton" onclick="play()">Play</button>
-      <button id="loopButton" onclick="play(true)">Play looped</button>
-      <button id="stopButton" onclick="stop()">Stop</button>
-      <button id="recordButton" onclick="record()">Record</button>
+      <button id="playButton" onclick="play()"><i class="fa fa-play"></i>&nbsp;Play</button>
+      <button id="loopButton" onclick="play(true)"><i class="fa fa-refresh"></i>&nbsp;Play looped</button>
+      <button id="stopButton" onclick="stop()"><i class="fa fa-stop"></i>&nbsp;Stop</button>
+      <button id="recordButton" onclick="record()"><i class="fa fa-circle"></i>&nbsp;Record</button>
       <input id="animateCheckbox" type="checkbox" onchange="toggleAnimate(event)" checked="checked" />Animate
     </div>
     <div>
-      <button id="addButton" onclick="toggleAddNoteMode()">Add note</button>
-      <button id="removeButton" onclick="toggleRemoveNoteMode()">Remove note</button>
-      <button id="resizeButton" onclick="toggleResizeMode()">Resize</button>
+      <button id="addButton" onclick="toggleAddNoteMode()"><i class="fa fa-plus"></i>&nbsp;Add note</button>
+      <button id="removeButton" onclick="toggleRemoveNoteMode()"><i class="fa fa-minus"></i>&nbsp;Remove note</button>
+      <button id="resizeButton" onclick="toggleResizeMode()"><i class="fa fa-arrows-h"></i>&nbsp;Resize</button>
     </div>
     <div>
       Beats: <input id="beatsInput" type="number" min="1" style="width: 4em" />
       BPM: <input id="bpmInput" type="number" min="1" style="width: 4em" />
     </div>
     <div>
-      <button onclick="showImportDialogue()">Import</button>
+      <button onclick="showImportDialogue()"><i class="fa fa-download"></i>&nbsp;Import</button>
     </div>
     <div>
       <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
@@ -39,22 +40,26 @@
       <h2>Select score to import from</h2>
       URL: <input id="importScoreUrlInput" type="text" /><button onclick="loadImportScoreFromUrl()">Load</button>
       <ul id="dialogueScoreList" class="buttonList"></ul>
-      <button onclick="importScore()" title="Import entire score, replacing the current one.">Import score</button>
-      <button onclick="importNotes()" title="Import notes selected in the sheet above. After the dialogue closes, select where in the score you want to place the imported notes.">Import selected notes</button>
-      <button onclick="cancelDialogue()" title="Close dialogue without importing anything.">Cancel</button>
+      <br />
+      <button onclick="importScore()" title="Import entire score, replacing the current one."><i class="fa fa-download"></i>&nbsp;Import score</button>
+      <button onclick="importNotes()" title="Import notes selected in the sheet above. After the dialogue closes, select where in the score you want to place the imported notes."><i class="fa fa-square-o"></i>&nbsp;Import selected notes</button>
+      <button onclick="closeDialogue()" title="Close dialogue without importing anything."><i class="fa fa-close"></i>&nbsp;Cancel</button>
     </div>
     <div id="editNoteTypeDialogue" class="popup">
       <h1>Edit Note Type</h1>
       <h2 id="editNoteTypeName"></h2>
       URL: <input id="editNoteTypeUrl" type="text" /><button onclick="loadNoteTypeFromUrl()">Load</button>
       <ul id="editNoteTypeList" class="buttonList"></ul>
-      <button onclick="cancelDialogue()" title="Close dialogue without changing anything.">Cancel</button>
+      <br />
+      <button onclick="closeDialogue()" title="Close dialogue without changing anything."><i class="fa fa-close"></i>&nbsp;Cancel</button>
     </div>
     <div id="addNoteTypeDialogue" class="popup">
       <h1>Add Note Type</h1>
       URL: <input id="addNoteTypeUrl" type="text" /><button onclick="loadNoteTypeFromUrl()">Load</button>
       <ul id="addNoteTypeList" class="buttonList"></ul>
-      <button onclick="cancelDialogue()">Close</button>
+      <br />
+      <button onclick="closeDialogue()"><i class="fa fa-close"></i>&nbsp;Close</button>
     </div>
+    Uses Font Awesome by Dave Gandy - <a href="http://fontawesome.io">http://fontawesome.io</a>
   </body>
 </html>
