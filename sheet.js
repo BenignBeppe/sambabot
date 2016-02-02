@@ -380,14 +380,30 @@ function MainSheet(canvas)
                 this.moveNote(note, deltaX);
             }
         }
-        else if(event.buttons == 1 && this.selectedNotes.length > 0)
+        else if(this.selectedNotes.length > 0)
         {
-            this.saveUndoStateBeforeNotesAreMoved();
-            this.moveSelectedNotes(event.movementX);
+            if(event.buttons == 1)
+            {
+                this.saveUndoStateBeforeNotesAreMoved();
+                this.moveSelectedNotes(event.movementX);
+            }
+            else
+            {
+                this.highlightedNoteLine = this.closeToNoteLine(y);
+            }
+        }
+        if(this.selectionStartPoint != null)
+        {
+            this.selectionEndPoint.x = x;
+            this.selectionEndPoint.y = y;
         }
         else
         {
-            this.updateSelection(x, y);
+            this.highlightedNote = this.withinNote(x, y);
+            if(this.highlightedNote != null)
+            {
+                this.highlightedNoteLine = null;
+            }
         }
         this.beatHoveredOver = this.getBeatContainingX(x);
     }
@@ -443,6 +459,11 @@ function MainSheet(canvas)
             updateScoreInSoundLoop();
             importSheet.selectedNotes = [];
         }
+        else if(this.selectedNotes.length > 0 &&
+                this.highlightedNoteLine != null)
+        {
+            this.changeNoteTypeForSelectedNotes(this.highlightedNoteLine);
+        }
         else
         {
             this.startSelection(event);
@@ -478,6 +499,17 @@ function MainSheet(canvas)
             var adjustedNote = this.adjustNote(note);
             this.addNote(adjustedNote);
         }
+    }
+
+    this.changeNoteTypeForSelectedNotes = function(noteType)
+    {
+        saveUndoState();
+        for(var note of this.selectedNotes)
+        {
+            note.type = noteType;
+        }
+        updateJson();
+        updateSounds();
     }
 
     this.saveUndoStateBeforeNotesAreMoved = function()
