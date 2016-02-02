@@ -360,6 +360,7 @@ function MainSheet(canvas)
     {
         var x = this.xInCanvas(event.clientX);
         var y = this.yInCanvas(event.clientY);
+        this.highlightedNoteLine = null;
         if(mode == ADD_NOTE)
         {
             this.highlightedNoteLine = this.closeToNoteLine(y);
@@ -400,10 +401,6 @@ function MainSheet(canvas)
         else
         {
             this.highlightedNote = this.withinNote(x, y);
-            if(this.highlightedNote != null)
-            {
-                this.highlightedNoteLine = null;
-            }
         }
         this.beatHoveredOver = this.getBeatContainingX(x);
     }
