@@ -288,6 +288,7 @@ function onSoundLoopMessage(message)
     else if(type == "startTime")
     {
         startTime = content;
+        resetAllSounds();
     }
     else
     {
@@ -472,6 +473,14 @@ function updateBpm(event)
     mainSheet.score.bpm = parseFloat(event.target.value);
     updateScoreInSoundLoop();
     updateJson();
+}
+
+function resetAllSounds()
+{
+    for(var sound of sounds)
+    {
+        sound.load();
+    }
 }
 
 function addSound(path)
