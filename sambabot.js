@@ -283,6 +283,7 @@ function onSoundLoopMessage(message)
             updateScoreInSoundLoop();
             mode = null;
         }
+        playing = false;
     }
     else if(type == "startTime")
     {
