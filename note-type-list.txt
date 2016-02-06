@@ -1,5 +1,0 @@
-sounds/repinique-rimshot.ogg
-sounds/repinique-rod.ogg
-sounds/repinique-rimshot-soft.ogg
-sounds/repinique-hand.ogg
-sounds/repinique-head.ogg
