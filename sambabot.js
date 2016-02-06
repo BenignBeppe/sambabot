@@ -107,6 +107,7 @@ function getSearchParameter(parameterName)
 
 function loadScore(score, shouldJsonUpdate)
 {
+    saveUndoState();
     mainSheet.changeScore(score);
     beatsInput.value = mainSheet.score.beats;
     bpmInput.value = mainSheet.score.bpm;
