@@ -21,7 +21,7 @@
 
 .popup
 {
-    position: fixed;
+    position: absolute;
     top: 50px;
     left: 50px;
     background: white;
