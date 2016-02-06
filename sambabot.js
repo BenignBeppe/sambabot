@@ -374,6 +374,10 @@ function stop()
     postMessageToSoundLoop("stop");
     startTime = null;
     playing = false;
+    if(mode == RECORD)
+    {
+        exitMode();
+    }
 }
 
 function record()

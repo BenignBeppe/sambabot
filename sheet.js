@@ -370,7 +370,7 @@ function MainSheet(canvas)
             this.canvas.width;
         this.context.strokeStyle = MAIN_COLOUR;
         this.drawLine(x, 0, x, this.canvas.height, 2);
-        if(playing)
+        if(playing || mode == RECORD)
         {
             this.scrollToCenterX(x);
         }
