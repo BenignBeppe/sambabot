@@ -13,7 +13,6 @@ function Sheet(canvas)
     this.selectedNotes = [];
     this.clickedNote;
     this.highlightedNote;
-    this.firstNote;
 
     this.draw = function()
     {
@@ -245,10 +244,6 @@ function Sheet(canvas)
         if(this.selectedNotes.indexOf(note) == -1)
         {
             this.selectedNotes.push(note);
-            if(this.firstNote == null || note.time < this.firstNote.time)
-            {
-                this.firstNote = note;
-            }
         }
     }
 
@@ -270,11 +265,6 @@ function Sheet(canvas)
             if(x > minX && x < maxX && y > minY && y < maxY)
             {
                 this.selectNote(note);
-                if(firstNoteTime == null || note.time < firstNoteTime)
-                {
-                    this.firstNote = note;
-                    firstNoteTime = note.time;
-                }
             }
         }
     }
@@ -330,9 +320,9 @@ function MainSheet(canvas)
     this.draw = function()
     {
         this.superDraw();
-        if(importSheet.selectedNotes.length > 0)
+        if(pastedNotes.length > 0)
         {
-            for(var note of importedNotes)
+            for(var note of pastedNotes)
             {
                 var adjustedNote = this.adjustNote(note);
                 this.drawNote(adjustedNote, IMPORT_COLOUR);
@@ -343,7 +333,8 @@ function MainSheet(canvas)
 
     this.adjustNote = function(note)
     {
-        var startBeat = Math.floor(importSheet.firstNote.time);
+        var startBeat = Math.floor(this.getFirstNote(pastedNotes).time);
+        console.log("startBeat = " + startBeat);
         var adjustedTime = note.time - startBeat + this.beatHoveredOver;
         var adjustedNote = {time: adjustedTime, type: note.type}
         return adjustedNote;
@@ -400,9 +391,10 @@ function MainSheet(canvas)
             this.saveUndoStateBeforeNotesAreMoved();
             for(var note of this.selectedNotes)
             {
+                var firstNoteTime = this.getFirstNote(this.selectedNotes).time;
                 var deltaX = event.movementX *
-                    ((note.time - this.firstNote.time) /
-                     (this.clickedNote.time - this.firstNote.time));
+                    ((note.time - firstNoteTime) /
+                     (this.clickedNote.time - firstNoteTime));
                 this.moveNote(note, deltaX);
             }
         }
@@ -482,11 +474,11 @@ function MainSheet(canvas)
                 this.removeNotes([this.highlightedNote]);
             }
         }
-        else if(importSheet.selectedNotes.length > 0)
+        else if(pastedNotes.length > 0)
         {
-            this.addImportedNotes();
+            this.addPastedNotes();
             updateScoreInSoundLoop();
-            importSheet.selectedNotes = [];
+            pastedNotes = [];
         }
         else if(this.selectedNotes.length > 0 &&
                 this.highlightedNoteLine != null)
@@ -520,14 +512,27 @@ function MainSheet(canvas)
         updateJson();
     }
 
-    this.addImportedNotes = function()
+    this.addPastedNotes = function()
     {
-        var startBeat = Math.floor(importSheet.firstNote.time);
-        for(var note of importSheet.selectedNotes)
+        var startBeat = Math.floor(this.getFirstNote(pastedNotes));
+        for(var note of pastedNotes)
         {
             var adjustedNote = this.adjustNote(note);
             this.addNote(adjustedNote);
         }
+    }
+
+    this.getFirstNote = function(notes)
+    {
+        var firstNote = null;
+        for(var note of notes)
+        {
+            if(firstNote == null || note.time < firstNote.time)
+            {
+                firstNote = note;
+            }
+        }
+        return firstNote;
     }
 
     this.changeNoteTypeForSelectedNotes = function(noteType)

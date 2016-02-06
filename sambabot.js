@@ -22,7 +22,8 @@ var undoHistory = [];
 var notesMoved = false;
 var shownDialogue;
 var importSheet;
-var importedNotes = [];
+var copiedNotes = [];
+var pastedNotes = [];
 var animateIntervalId;
 var playing = false;
 
@@ -453,7 +454,8 @@ function importScore()
 function importNotes()
 {
     closeDialogue();
-    importedNotes = this.importSheet.selectedNotes;
+    copiedNotes = this.importSheet.selectedNotes;
+    pasteNotes();
 }
 
 function closeDialogue()
@@ -517,9 +519,18 @@ function keyDown(event)
         {
             undo();
         }
+        else if(event.key == "c" && event.ctrlKey)
+        {
+            copyNotes();
+        }
+        else if(event.key == "v" && event.ctrlKey)
+        {
+            pasteNotes();
+        }
         else if(event.key == "Escape")
         {
             mainSheet.deselectNotes();
+            pastedNotes = [];
         }
     }
 }
@@ -534,6 +545,16 @@ function undo()
         updateJson();
         updateNoteTypeButtons();
     }
+}
+
+function copyNotes()
+{
+    copiedNotes = this.mainSheet.selectedNotes;
+}
+
+function pasteNotes()
+{
+    pastedNotes = copiedNotes;
 }
 
 function keyUp(event)
