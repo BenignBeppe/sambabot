@@ -163,12 +163,12 @@ function Sheet(canvas)
     this.xInCanvas = function(rawX)
     {
         return rawX - this.canvas.offsetLeft +
-            this.canvas.parentElement.scrollLeft;
+            this.canvas.parentElement.scrollLeft + document.body.scrollLeft;
     }
 
     this.yInCanvas = function(rawY)
     {
-        return rawY - this.canvas.offsetTop;
+        return rawY - this.canvas.offsetTop + document.body.scrollTop;
     }
 
     this.calculateNoteTime = function(x)
