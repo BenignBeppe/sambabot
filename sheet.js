@@ -460,7 +460,6 @@ function MainSheet(canvas)
             {
                 var time = this.xToTime(x);
                 this.addNote({time: time, type: this.highlightedNoteLine});
-                updateScoreInSoundLoop();
             }
         }
         else if(mode == REMOVE_NOTE)
@@ -477,7 +476,6 @@ function MainSheet(canvas)
         else if(pastedNotes.length > 0)
         {
             this.addPastedNotes();
-            updateScoreInSoundLoop();
             pastedNotes = [];
         }
         else if(this.selectedNotes.length > 0 &&
@@ -508,7 +506,6 @@ function MainSheet(canvas)
             this.score.notes.splice(index, 1);
             sounds.splice(index, 1);
         }
-        updateScoreInSoundLoop();
         updateJson();
     }
 
@@ -570,7 +567,6 @@ function MainSheet(canvas)
         }
         if(this.notesMoved)
         {
-            updateScoreInSoundLoop();
             updateJson();
             this.notesMoved = false;
         }
@@ -605,7 +601,6 @@ function MainSheet(canvas)
         saveUndoState();
         this.score.beats = beats;
         this.updateWidth();
-        updateScoreInSoundLoop();
         updateJson();
     }
 }

@@ -8,7 +8,6 @@ var FPS = 30;
 
 var mainSheet;
 var startTime;
-var looping = false;
 var mode;
 var sounds;
 var clickSound;
@@ -19,18 +18,17 @@ var recordKeys = {
     f: {noteType: 2, down: false}
 }
 var undoHistory = [];
-var notesMoved = false;
 var shownDialogue;
 var importSheet;
 var copiedNotes = [];
 var pastedNotes = [];
 var animateIntervalId;
 var playing = false;
+var playTimeouts = [];
 
 function onLoad()
 {
     jsonRepresentation = document.getElementById("jsonRepresentation");
-    initSoundLoop();
     mainSheet = new MainSheet(document.getElementById("mainScoreCanvas"));
     loadScoreFromParameters();
     saveUndoState();
@@ -49,12 +47,6 @@ function onLoad()
     importSheet = new ImportSheet(
         document.getElementById("importScoreCanvas"));
     updateNoteTypeButtons();
-}
-
-function initSoundLoop()
-{
-    soundLoop = new Worker("sound-loop.js");
-    soundLoop.onmessage = onSoundLoopMessage;
 }
 
 function updateSounds()
@@ -115,7 +107,6 @@ function loadScore(score, shouldJsonUpdate)
     {
         updateJson();
     }
-    updateScoreInSoundLoop();
     updateSounds();
     updateNoteTypeButtons()
 }
@@ -161,11 +152,6 @@ function updateAnimate(animate)
 function toggleAnimate(event)
 {
     updateAnimate(event.target.checked);
-}
-
-function updateScoreInSoundLoop()
-{
-    postMessageToSoundLoop("score", mainSheet.score);
 }
 
 function updateNoteTypeButtons()
@@ -265,56 +251,6 @@ function addNoteType(event)
     mainSheet.addNoteType(path);
 }
 
-function onSoundLoopMessage(message)
-{
-    var type = message.data.type;
-    var content = message.data.content;
-    if(type == "playNote")
-    {
-        playNote(content);
-    }
-    else if(type == "playClick")
-    {
-        clickSound.currentTime = 0;
-        clickSound.play();
-    }
-    else if(type == "scoreDone")
-    {
-        if(mode == RECORD)
-        {
-            updateScoreInSoundLoop();
-            mode = null;
-        }
-        playing = false;
-    }
-    else if(type == "startTime")
-    {
-        startTime = content;
-        resetAllSounds();
-    }
-    else
-    {
-        console.warn("Message of unkown type received:", message);
-    }
-}
-
-function postMessageToSoundLoop(type, content)
-{
-    if(content == null)
-    {
-        content = {};
-    }
-    var message = {type: type, content: content};
-    try
-    {
-        soundLoop.postMessage(message);
-    }
-    catch(e)
-    {
-        console.error("Couldn't post message:", message, e.message);
-    }
-}
-
 function toggleAddNoteMode()
 {
     toggleMode(ADD_NOTE, "crosshair");
@@ -357,16 +293,33 @@ function toggleResizeMode()
 
 function play(looping)
 {
-    postMessageToSoundLoop("play", {looping: looping});
+    resetAllSounds();
+    for(var i = 0; i < mainSheet.score.notes.length; i ++)
+    {
+        var timeout = setTimeout(
+            playNote, toSeconds(mainSheet.score.notes[i].time) * 1000, i);
+        playTimeouts.push(timeout);
+    }
+    if(looping)
+    {
+        var timeout = setTimeout(play, toSeconds(mainSheet.score.beats) * 1000,
+                                 true);
+        playTimeouts.push(timeout);
+    }
     startTime = Date.now();
     playing = true;
+}
+
+function toSeconds(timeInBeats)
+{
+    return timeInBeats * (60 / mainSheet.score.bpm);
 }
 
 function playNote(noteIndex)
 {
     var note = mainSheet.score.notes[noteIndex];
     var sound = sounds[noteIndex];
-    var expectedTime = note.time * (60 / mainSheet.score.bpm);
+    var expectedTime = toSeconds(note.time);
     var actualTime = (Date.now() - startTime) / 1000.0;
     console.log("> playNote():", actualTime - expectedTime);
     sound.play();
@@ -374,7 +327,10 @@ function playNote(noteIndex)
 
 function stop()
 {
-    postMessageToSoundLoop("stop");
+    for(var timeout of playTimeouts)
+    {
+        clearTimeout(timeout);
+    }
     startTime = null;
     playing = false;
     if(mode == RECORD)
@@ -386,7 +342,22 @@ function stop()
 function record()
 {
     mode = RECORD;
-    postMessageToSoundLoop("playIntro");
+    playIntro();
+}
+
+function playIntro()
+{
+    playClick();
+    setTimeout(playClick, toSeconds(1) * 1000);
+    setTimeout(playClick, toSeconds(2) * 1000);
+    setTimeout(playClick, toSeconds(3) * 1000);
+    setTimeout(play, toSeconds(4) * 1000);
+}
+
+function playClick()
+{
+    clickSound.load();
+    clickSound.play();
 }
 
 function showImportDialogue()
@@ -474,7 +445,6 @@ function updateBeats(event)
 function updateBpm(event)
 {
     mainSheet.score.bpm = parseFloat(event.target.value);
-    updateScoreInSoundLoop();
     updateJson();
 }
 
@@ -541,7 +511,6 @@ function undo()
     if(undoHistory.length > 0)
     {
         mainSheet.changeScore(undoHistory.pop());
-        updateScoreInSoundLoop();
         updateSounds();
         updateJson();
         updateNoteTypeButtons();
