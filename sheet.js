@@ -1,6 +1,7 @@
-var MAIN_COLOUR = "rgb(0, 0, 0)"
-var HIGHLIGHT_COLOUR = "rgb(255, 0, 0)"
-var IMPORT_COLOUR = "rgb(0, 255, 255)"
+var MAIN_COLOUR = "rgb(0, 0, 0)";
+var HIGHLIGHT_COLOUR = "rgb(255, 0, 0)";
+var IMPORT_COLOUR = "rgb(0, 255, 255)";
+var BEAT_WIDTH = 100;
 
 function Sheet(canvas)
 {
@@ -16,7 +17,7 @@ function Sheet(canvas)
 
     this.draw = function()
     {
-        this.context.clearRect(0, 0, canvas.width, canvas.height);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawNoteLines();
         this.drawBeatLines();
         this.drawNotes();
@@ -45,7 +46,7 @@ function Sheet(canvas)
 
     this.calculateNoteTypeY = function(noteType)
     {
-        var gapSize = canvas.height / (this.numberOfNoteTypes() + 1);
+        var gapSize = this.canvas.height / (this.numberOfNoteTypes() + 1);
         return gapSize * (noteType + 1);
     }
 
@@ -161,14 +162,13 @@ function Sheet(canvas)
 
     this.xInCanvas = function(rawX)
     {
-        return rawX - this.canvas.offsetLeft -
-            this.canvas.parentElement.offsetLeft;
+        return rawX - this.canvas.offsetLeft +
+            this.canvas.parentElement.scrollLeft;
     }
 
     this.yInCanvas = function(rawY)
     {
-        return rawY - this.canvas.offsetTop -
-            this.canvas.parentElement.offsetTop;
+        return rawY - this.canvas.offsetTop;
     }
 
     this.calculateNoteTime = function(x)
@@ -291,6 +291,22 @@ function Sheet(canvas)
             this.highlightedNote = this.withinNote(x, y);
         }
     }
+
+    this.deselectNotes = function()
+    {
+        this.selectedNotes = [];
+    }
+
+    this.changeScore = function(score)
+    {
+        this.score = score;
+        this.updateWidth();
+    }
+
+    this.updateWidth = function()
+    {
+        this.canvas.width = this.score.beats * BEAT_WIDTH;
+    }
 }
 
 function MainSheet(canvas)
@@ -354,13 +370,22 @@ function MainSheet(canvas)
             this.canvas.width;
         this.context.strokeStyle = MAIN_COLOUR;
         this.drawLine(x, 0, x, this.canvas.height, 2);
+        if(playing)
+        {
+            this.scrollToCenterX(x);
+        }
+    }
+
+    this.scrollToCenterX = function(x)
+    {
+        this.canvas.parentElement.scrollLeft =
+            x - this.canvas.parentElement.clientWidth / 2;
     }
 
     this.mouseMove = function(event)
     {
         var x = this.xInCanvas(event.clientX);
         var y = this.yInCanvas(event.clientY);
-        this.highlightedNoteLine = null;
         if(mode == ADD_NOTE)
         {
             this.highlightedNoteLine = this.closeToNoteLine(y);
@@ -402,7 +427,14 @@ function MainSheet(canvas)
         {
             this.highlightedNote = this.withinNote(x, y);
         }
-        this.beatHoveredOver = this.getBeatContainingX(x);
+        if(this.highlightedNote == null)
+        {
+            this.beatHoveredOver = this.getBeatContainingX(x);
+        }
+        else
+        {
+            this.highlightedNoteLine = null;
+        }
     }
 
     this.closeToNoteLine = function(y)
@@ -563,9 +595,13 @@ function MainSheet(canvas)
         updateNoteTypeButtons();
     }
 
-    this.deselectNotes = function()
+    this.setBeats = function(beats)
     {
-        this.selectedNotes = [];
+        saveUndoState();
+        this.score.beats = beats;
+        this.updateWidth();
+        updateScoreInSoundLoop();
+        updateJson();
     }
 }
 
@@ -606,5 +642,21 @@ function ImportSheet(canvas)
             this.selectionStartPoint = null;
             this.selectionEndPoint = null;
         }
+    }
+
+    this.superXInCanvas = this.xInCanvas;
+    this.xInCanvas = function(rawX)
+    {
+        var dialogueOffset =
+            document.getElementById("importDialogue").offsetLeft;
+        return this.superXInCanvas(rawX) - dialogueOffset;
+    }
+
+    this.superYInCanvas = this.yInCanvas;
+    this.yInCanvas = function(rawY)
+    {
+        var dialogueOffset =
+            document.getElementById("importDialogue").offsetTop;
+        return this.superYInCanvas(rawY) - dialogueOffset;
     }
 }

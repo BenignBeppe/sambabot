@@ -7,8 +7,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   </head>
   <body onload="onLoad()">
-    <canvas id="scoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
-    <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
+    <div style="display: flex;">
+      <div class="scrollDiv">
+        <canvas id="mainScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+      </div>
+      <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
+    </div>
     <br />
     <div>
       <button id="playButton" onclick="play()"><i class="fa fa-play"></i>&nbsp;Play</button>
@@ -36,7 +40,9 @@
     <div id="overlay" class="overlay"></div>
     <div id="importDialogue" class="popup">
       <h1>Import</h1>
-      <canvas id="importScoreCanvas" class="scoreCanvas" width="500" height="200"></canvas>
+      <div class="scrollDiv">
+        <canvas id="importScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+      </div>
       <h2>Select score to import from</h2>
       URL: <input id="importScoreUrlInput" type="text" /><button onclick="loadImportScoreFromUrl()">Load</button>
       <ul id="dialogueScoreList" class="buttonList"></ul>

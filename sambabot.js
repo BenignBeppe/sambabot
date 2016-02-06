@@ -24,12 +24,13 @@ var shownDialogue;
 var importSheet;
 var importedNotes = [];
 var animateIntervalId;
+var playing = false;
 
 function onLoad()
 {
     jsonRepresentation = document.getElementById("jsonRepresentation");
     initSoundLoop();
-    mainSheet = new MainSheet(document.getElementById("scoreCanvas"));
+    mainSheet = new MainSheet(document.getElementById("mainScoreCanvas"));
     loadScoreFromParameters();
     saveUndoState();
     clickSound = new Audio("sounds/repinique-head.ogg");
@@ -46,6 +47,7 @@ function onLoad()
     updateJson();
     importSheet = new ImportSheet(
         document.getElementById("importScoreCanvas"));
+    updateNoteTypeButtons();
 }
 
 function initSoundLoop()
@@ -104,7 +106,7 @@ function getSearchParameter(parameterName)
 
 function loadScore(score, shouldJsonUpdate)
 {
-    mainSheet.score = score;
+    mainSheet.changeScore(score);
     beatsInput.value = mainSheet.score.beats;
     bpmInput.value = mainSheet.score.bpm;
     if(shouldJsonUpdate || shouldJsonUpdate == null)
@@ -349,6 +351,7 @@ function play(looping)
 {
     postMessageToSoundLoop("play", {looping: looping});
     startTime = Date.now();
+    playing = true;
 }
 
 function playNote(noteIndex)
@@ -365,6 +368,7 @@ function stop()
 {
     postMessageToSoundLoop("stop");
     startTime = null;
+    playing = false;
 }
 
 function record()
@@ -417,7 +421,7 @@ function selectImportScore(event)
 
 function loadImportScore(score)
 {
-    importSheet.score = score;
+    importSheet.changeScore(score);
     importSheet.draw();
 }
 
@@ -451,9 +455,7 @@ function closeDialogue()
 
 function updateBeats(event)
 {
-    mainSheet.score.beats = parseFloat(event.target.value);
-    updateScoreInSoundLoop();
-    updateJson();
+    mainSheet.setBeats(parseFloat(event.target.value));
 }
 
 function updateBpm(event)
@@ -508,7 +510,7 @@ function undo()
 {
     if(undoHistory.length > 0)
     {
-        mainSheet.score = undoHistory.pop();
+        mainSheet.changeScore(undoHistory.pop());
         updateScoreInSoundLoop();
         updateSounds();
         updateJson();
