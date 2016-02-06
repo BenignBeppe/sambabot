@@ -328,6 +328,10 @@ function toggleMode(newMode, cursor)
         console.log("Entering mode:", newMode)
         mode = newMode;
         mainSheet.canvas.style.cursor = cursor;
+        if(mode == ADD_NOTE || mode == REMOVE_NOTE)
+        {
+            this.mainSheet.deselectNotes();
+        }
     }
 }
 
