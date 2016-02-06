@@ -1,0 +1,31 @@
+{
+    "beats": 2,
+    "bpm": 94,
+    "noteTypes": [
+        "sounds/repinique-head.ogg",
+        "sounds/repinique-rimshot.ogg",
+        "sounds/repinique-hand.ogg"
+    ],
+    "notes": [
+        {
+            "time": 0.018666666666666144,
+            "type": 0
+        },
+        {
+            "time": 0.3259999999999992,
+            "type": 1
+        },
+        {
+            "time": 0.4833333333333323,
+            "type": 1
+        },
+        {
+            "time": 0.7393333333333325,
+            "type": 2
+        },
+        {
+            "time": 1.01,
+            "type": 0
+        }
+    ]
+}
