@@ -306,6 +306,12 @@ function play(looping)
                                  true);
         playTimeouts.push(timeout);
     }
+    else
+    {
+        var timeout = setTimeout(stop, toSeconds(mainSheet.score.beats) * 1000,
+                                 true);
+        playTimeouts.push(timeout);
+    }
     startTime = Date.now();
     playing = true;
 }
