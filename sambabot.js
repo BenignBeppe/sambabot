@@ -9,7 +9,6 @@ var FPS = 30;
 var mainSheet;
 var startTime;
 var mode;
-var sounds;
 var clickSound;
 var jsonRepresentation;
 var recordKeys = {
@@ -24,12 +23,14 @@ var copiedNotes = [];
 var pastedNotes = [];
 var animateIntervalId;
 var playing = false;
-var playTimeouts = [];
+var audioPlayer;
+var donePlayingTimeout;
 
 function onLoad()
 {
     jsonRepresentation = document.getElementById("jsonRepresentation");
     mainSheet = new MainSheet(document.getElementById("mainScoreCanvas"));
+    audioPlayer = new HtmlAudioPlayer();
     loadScoreFromParameters();
     saveUndoState();
     clickSound = new Audio("sounds/repinique-head.ogg");
@@ -47,16 +48,6 @@ function onLoad()
     importSheet = new ImportSheet(
         document.getElementById("importScoreCanvas"));
     updateNoteTypeButtons();
-}
-
-function updateSounds()
-{
-    sounds = [];
-    for(var note of mainSheet.score.notes)
-    {
-        var sound = new Audio(mainSheet.score.noteTypes[note.type]);
-        sounds.push(sound);
-    }
 }
 
 function loadJsonFromRepresentation()
@@ -107,7 +98,7 @@ function loadScore(score, shouldJsonUpdate)
     {
         updateJson();
     }
-    updateSounds();
+    audioPlayer.updateSounds();
     updateNoteTypeButtons()
 }
 
@@ -293,27 +284,20 @@ function toggleResizeMode()
 
 function play(looping)
 {
-    resetAllSounds();
-    for(var i = 0; i < mainSheet.score.notes.length; i ++)
-    {
-        var timeout = setTimeout(
-            playNote, toSeconds(mainSheet.score.notes[i].time) * 1000, i);
-        playTimeouts.push(timeout);
-    }
+    stop();
     if(looping)
     {
-        var timeout = setTimeout(play, toSeconds(mainSheet.score.beats) * 1000,
-                                 true);
-        playTimeouts.push(timeout);
+        donePlayingTimeout = setTimeout(
+            play, toSeconds(mainSheet.score.beats) * 1000, true);
     }
     else
     {
-        var timeout = setTimeout(stop, toSeconds(mainSheet.score.beats) * 1000,
-                                 true);
-        playTimeouts.push(timeout);
+        donePlayingTimeout = setTimeout(
+            stop, toSeconds(mainSheet.score.beats) * 1000);
     }
     startTime = Date.now();
     playing = true;
+    audioPlayer.play(looping);
 }
 
 function toSeconds(timeInBeats)
@@ -321,22 +305,10 @@ function toSeconds(timeInBeats)
     return timeInBeats * (60 / mainSheet.score.bpm);
 }
 
-function playNote(noteIndex)
-{
-    var note = mainSheet.score.notes[noteIndex];
-    var sound = sounds[noteIndex];
-    var expectedTime = toSeconds(note.time);
-    var actualTime = (Date.now() - startTime) / 1000.0;
-    console.log("> playNote():", actualTime - expectedTime);
-    sound.play();
-}
-
 function stop()
 {
-    for(var timeout of playTimeouts)
-    {
-        clearTimeout(timeout);
-    }
+    audioPlayer.stop();
+    clearTimeout(donePlayingTimeout);
     startTime = null;
     playing = false;
     if(mode == RECORD)
@@ -454,20 +426,6 @@ function updateBpm(event)
     updateJson();
 }
 
-function resetAllSounds()
-{
-    for(var sound of sounds)
-    {
-        sound.load();
-    }
-}
-
-function addSound(path)
-{
-    sounds.push(new Audio(path));
-    updateJson();
-}
-
 function updateJson()
 {
     jsonRepresentation.value = JSON.stringify(mainSheet.score, null, 4);
@@ -517,7 +475,7 @@ function undo()
     if(undoHistory.length > 0)
     {
         mainSheet.changeScore(undoHistory.pop());
-        updateSounds();
+        audioPlayer.updateSounds();
         updateJson();
         updateNoteTypeButtons();
     }

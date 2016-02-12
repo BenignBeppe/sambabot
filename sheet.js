@@ -494,7 +494,8 @@ function MainSheet(canvas)
         saveUndoState();
         this.score.notes.push(note);
         var path = this.score.noteTypes[note.type];
-        addSound(path);
+        audio.addSound(path);
+        updateJson();
     }
 
     this.removeNotes = function(notes)
@@ -504,8 +505,8 @@ function MainSheet(canvas)
         {
             var index = this.score.notes.indexOf(note);
             this.score.notes.splice(index, 1);
-            sounds.splice(index, 1);
         }
+        audio.updateSounds();
         updateJson();
     }
 
@@ -540,7 +541,7 @@ function MainSheet(canvas)
             note.type = noteType;
         }
         updateJson();
-        updateSounds();
+        audio.updateSounds();
     }
 
     this.saveUndoStateBeforeNotesAreMoved = function()
@@ -584,7 +585,7 @@ function MainSheet(canvas)
         saveUndoState();
         this.score.noteTypes[noteTypeIndex] = newNoteType;
         updateJson();
-        updateSounds();
+        audio.updateSounds();
         updateNoteTypeButtons();
     }
 
