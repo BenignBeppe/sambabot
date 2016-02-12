@@ -494,7 +494,7 @@ function MainSheet(canvas)
         saveUndoState();
         this.score.notes.push(note);
         var path = this.score.noteTypes[note.type];
-        audio.addSound(path);
+        audioPlayer.addSound(path);
         updateJson();
     }
 
@@ -506,7 +506,7 @@ function MainSheet(canvas)
             var index = this.score.notes.indexOf(note);
             this.score.notes.splice(index, 1);
         }
-        audio.updateSounds();
+        audioPlayer.updateSounds();
         updateJson();
     }
 
@@ -541,7 +541,7 @@ function MainSheet(canvas)
             note.type = noteType;
         }
         updateJson();
-        audio.updateSounds();
+        audioPlayer.updateSounds();
     }
 
     this.saveUndoStateBeforeNotesAreMoved = function()
@@ -585,7 +585,7 @@ function MainSheet(canvas)
         saveUndoState();
         this.score.noteTypes[noteTypeIndex] = newNoteType;
         updateJson();
-        audio.updateSounds();
+        audioPlayer.updateSounds();
         updateNoteTypeButtons();
     }
 

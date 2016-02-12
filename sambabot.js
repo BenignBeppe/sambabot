@@ -30,7 +30,7 @@ function onLoad()
 {
     jsonRepresentation = document.getElementById("jsonRepresentation");
     mainSheet = new MainSheet(document.getElementById("mainScoreCanvas"));
-    audioPlayer = new HtmlAudioPlayer();
+    audioPlayer = new WebAudioApiPlayer();
     loadScoreFromParameters();
     saveUndoState();
     clickSound = new Audio("sounds/repinique-head.ogg");
