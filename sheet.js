@@ -361,7 +361,7 @@ function MainSheet(canvas)
             this.canvas.width;
         this.context.strokeStyle = MAIN_COLOUR;
         this.drawLine(x, 0, x, this.canvas.height, 2);
-        if(playing || mode == RECORD)
+        if(playing)
         {
             this.scrollToCenterX(x);
         }
@@ -454,7 +454,7 @@ function MainSheet(canvas)
         {
             if(this.highlightedNoteLine == null)
             {
-                toggleAddNoteMode();
+                exitMode();
             }
             else
             {
@@ -466,7 +466,7 @@ function MainSheet(canvas)
         {
             if(this.highlightedNote == null)
             {
-                mode = null;
+                exitMode();
             }
             else
             {
@@ -494,7 +494,6 @@ function MainSheet(canvas)
         saveUndoState();
         this.score.notes.push(note);
         var path = this.score.noteTypes[note.type];
-        audioPlayer.addSound(path);
         updateJson();
     }
 
@@ -506,7 +505,6 @@ function MainSheet(canvas)
             var index = this.score.notes.indexOf(note);
             this.score.notes.splice(index, 1);
         }
-        audioPlayer.updateSounds();
         updateJson();
     }
 
@@ -541,7 +539,6 @@ function MainSheet(canvas)
             note.type = noteType;
         }
         updateJson();
-        audioPlayer.updateSounds();
     }
 
     this.saveUndoStateBeforeNotesAreMoved = function()
@@ -585,7 +582,6 @@ function MainSheet(canvas)
         saveUndoState();
         this.score.noteTypes[noteTypeIndex] = newNoteType;
         updateJson();
-        audioPlayer.updateSounds();
         updateNoteTypeButtons();
     }
 

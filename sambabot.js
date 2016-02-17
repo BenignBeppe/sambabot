@@ -3,7 +3,6 @@ var CLOSE_DISTANCE = 20;
 var ADD_NOTE = "ADD_NOTE";
 var REMOVE_NOTE = "REMOVE_NOTE";
 var RESIZE = "RESIZE";
-var RECORD = "RECORD";
 var FPS = 30;
 
 var mainSheet;
@@ -23,6 +22,7 @@ var copiedNotes = [];
 var pastedNotes = [];
 var animateIntervalId;
 var playing = false;
+var recording = false;
 var audioPlayer;
 var donePlayingTimeout;
 
@@ -242,44 +242,45 @@ function addNoteType(event)
     mainSheet.addNoteType(path);
 }
 
-function toggleAddNoteMode()
-{
-    toggleMode(ADD_NOTE, "crosshair");
-}
-
-function toggleMode(newMode, cursor)
+function toggleMode(newMode)
 {
     if(newMode == mode)
     {
-        console.log("Exiting mode:", mode)
         exitMode();
     }
     else
     {
-        console.log("Entering mode:", newMode)
-        mode = newMode;
-        mainSheet.canvas.style.cursor = cursor;
-        if(mode == ADD_NOTE || mode == REMOVE_NOTE)
-        {
-            this.mainSheet.deselectNotes();
-        }
+        enterMode(newMode);
     }
 }
 
 function exitMode()
 {
+    console.log("Exiting mode:", mode)
     mode = null;
     mainSheet.canvas.style.cursor = "default";
 }
 
-function toggleRemoveNoteMode()
+function enterMode(newMode)
 {
-    toggleMode(REMOVE_NOTE);
-}
-
-function toggleResizeMode()
-{
-    toggleMode(RESIZE, "ew-resize");
+    console.log("Entering mode:", newMode)
+    mode = newMode;
+    if(mode == ADD_NOTE || mode == REMOVE_NOTE)
+    {
+        this.mainSheet.deselectNotes();
+    }
+    if(mode == ADD_NOTE)
+    {
+        mainSheet.canvas.style.cursor = "crosshair";
+    }
+    if(mode == RESIZE)
+    {
+        mainSheet.canvas.style.cursor = "ew-resize";
+    }
+    else
+    {
+        mainSheet.canvas.style.cursor = "default";
+    }
 }
 
 function play(looping)
@@ -311,16 +312,14 @@ function stop()
     clearTimeout(donePlayingTimeout);
     startTime = null;
     playing = false;
-    if(mode == RECORD)
-    {
-        exitMode();
-    }
+    recording = false;
 }
 
 function record()
 {
-    mode = RECORD;
+    recrding = true;
     playIntro();
+    setTimeout(function() {play(); recording = true;}, toSeconds(4) * 1000);
 }
 
 function playIntro()
@@ -329,7 +328,6 @@ function playIntro()
     setTimeout(playClick, toSeconds(1) * 1000);
     setTimeout(playClick, toSeconds(2) * 1000);
     setTimeout(playClick, toSeconds(3) * 1000);
-    setTimeout(play, toSeconds(4) * 1000);
 }
 
 function playClick()
@@ -433,7 +431,7 @@ function updateJson()
 
 function keyDown(event)
 {
-    if(mode == RECORD)
+    if(recording)
     {
         if(event.key in recordKeys && !recordKeys[event.key].down)
         {

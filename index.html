@@ -23,9 +23,9 @@
       <input id="animateCheckbox" type="checkbox" onchange="toggleAnimate(event)" checked="checked" />Animate
     </div>
     <div>
-      <button id="addButton" onclick="toggleAddNoteMode()"><i class="fa fa-plus"></i>&nbsp;Add note</button>
-      <button id="removeButton" onclick="toggleRemoveNoteMode()"><i class="fa fa-minus"></i>&nbsp;Remove note</button>
-      <button id="resizeButton" onclick="toggleResizeMode()"><i class="fa fa-arrows-h"></i>&nbsp;Resize</button>
+      <button id="addButton" onclick="toggleMode(ADD_NOTE)"><i class="fa fa-plus"></i>&nbsp;Add note</button>
+      <button id="removeButton" onclick="toggleMode(REMOVE_NOTE)"><i class="fa fa-minus"></i>&nbsp;Remove note</button>
+      <button id="resizeButton" onclick="toggleMode(RESIZE)"><i class="fa fa-arrows-h"></i>&nbsp;Resize</button>
     </div>
     <div>
       Beats: <input id="beatsInput" type="number" min="1" style="width: 4em" />
