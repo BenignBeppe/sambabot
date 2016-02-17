@@ -102,6 +102,7 @@ function loadScore(score, shouldJsonUpdate)
     }
     audioPlayer.updateSounds();
     updateNoteTypeButtons()
+    mainSheet.draw();
 }
 
 function readScoreFromFile(scoreName, callback)
