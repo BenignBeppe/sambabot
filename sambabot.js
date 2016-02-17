@@ -60,8 +60,10 @@ function loadImportScoreFromUrl()
 {
     var urlInput = document.getElementById("importScoreUrlInput");
     var url = urlInput.value;
-    var score = JSON.parse(readFile(url));
-    loadImportScore(score);
+    readFile(url, function(content) {
+        var score = JSON.parse(content);
+        loadImportScore(score);
+    });
 }
 
 function loadScoreFromParameters()
@@ -69,10 +71,10 @@ function loadScoreFromParameters()
     var scoreName = getSearchParameter("score");
     if(scoreName != null)
     {
-        loadScore(readScoreFromFile(scoreName));
-        return true;
+        readScoreFromFile(scoreName, function(score) {
+            loadScore(score);
+        });
     }
-    return false;
 }
 
 function getSearchParameter(parameterName)
@@ -102,21 +104,22 @@ function loadScore(score, shouldJsonUpdate)
     updateNoteTypeButtons()
 }
 
-function readScoreFromFile(scoreName)
+function readScoreFromFile(scoreName, callback)
 {
     var scorePath = "scores/" + scoreName + ".json";
-    var json = readFile(scorePath);
-    var score = JSON.parse(json);
-    return score;
+    readFile(scorePath, function(content) {
+        var score = JSON.parse(content);
+        callback(score);
+    });
 }
 
-function readFile(path)
+function readFile(path, callback)
 {
     var request = new XMLHttpRequest();
-    request.open("GET", path, false);
-    var content;
+    request.open("GET", path);
     request.onreadystatechange = function() {
-        content = request.response;
+        var content = request.response;
+        callback(content);
     };
     request.send();
     return content;
@@ -150,27 +153,29 @@ function updateNoteTypeButtons()
     var noteTypeList = document.getElementById("noteTypeList");
     var spacing = noteTypeList.clientHeight /
         mainSheet.score.noteTypes.length / 2;
-    var noteTypes = readFile("note-type-list.txt").trim().split("\n");
-    var noteTypeNames = [];
-    for(var path of mainSheet.score.noteTypes)
-    {
-        var name = getNoteTypeNameFromPath(path);
-        noteTypeNames.push(name);
-    }
-    var buttons = populateButtonList(
-        noteTypeList, noteTypeNames,
-        function(event) {
-            showEditNoteTypeDialogue(event.target.noteTypeIndex);});
-    for(var i = 0; i < buttons.length; i ++)
-    {
-        var button = buttons[i];
-        button.noteTypeIndex = i;
-        var spacing = noteTypeList.clientHeight /
-            mainSheet.score.noteTypes.length / 2;
-        var buttonSpacing = spacing - button.clientHeight / 2;
-        button.style.margin = buttonSpacing + "px 0px 0px 0px";
-    }
-    createAddNoteTypeButton();
+    readFile("note-type-list.txt", function(content) {
+        var noteTypes = content.trim().split("\n");
+        var noteTypeNames = [];
+        for(var path of mainSheet.score.noteTypes)
+        {
+            var name = getNoteTypeNameFromPath(path);
+            noteTypeNames.push(name);
+        }
+        var buttons = populateButtonList(
+            noteTypeList, noteTypeNames,
+            function(event) {
+                showEditNoteTypeDialogue(event.target.noteTypeIndex);});
+        for(var i = 0; i < buttons.length; i ++)
+        {
+            var button = buttons[i];
+            button.noteTypeIndex = i;
+            var spacing = noteTypeList.clientHeight /
+                mainSheet.score.noteTypes.length / 2;
+            var buttonSpacing = spacing - button.clientHeight / 2;
+            button.style.margin = buttonSpacing + "px 0px 0px 0px";
+        }
+        createAddNoteTypeButton();
+    });
 }
 
 function createAddNoteTypeButton()
@@ -202,38 +207,44 @@ function showEditNoteTypeDialogue(noteTypeIndex)
     document.getElementById("editNoteTypeName").innerHTML =
         getNoteTypeNameFromPath(mainSheet.score.noteTypes[noteTypeIndex]);
     var noteTypeList = document.getElementById("editNoteTypeList");
-    var noteTypes = readFile("note-type-list.txt").trim().split("\n");
-    var buttons = populateButtonList(noteTypeList, noteTypes, changeNoteType,
-                                     noteTypeIndex);
-    for(var i = 0; i < buttons.length; i ++)
-    {
-        buttons[i].noteTypePath = noteTypes[i];
-    }
-    showDialogue("editNoteTypeDialogue");
+    readFile("note-type-list.txt", function(content) {
+        var noteTypes = content.trim().split("\n");
+        var buttons = populateButtonList(
+            noteTypeList, noteTypes, changeNoteType, noteTypeIndex);
+        for(var i = 0; i < buttons.length; i ++)
+        {
+            buttons[i].noteTypePath = noteTypes[i];
+        }
+        showDialogue("editNoteTypeDialogue");
+    });
 }
 
 function changeNoteType(event, noteTypeIndex)
 {
     mainSheet.changeNoteType(noteTypeIndex[0], event.target.noteTypePath);
     closeDialogue();
+    this.audioPlayer.updateSounds();
 }
 
 function showAddNoteTypeDialogue(event)
 {
     var noteTypeList = document.getElementById("addNoteTypeList");
-    var noteTypes = readFile("note-type-list.txt").trim().split("\n");
-    var noteTypeNames = [];
-    for(var path of noteTypes)
-    {
-        var name = getNoteTypeNameFromPath(path);
-        noteTypeNames.push(name);
-    }
-    var buttons = populateButtonList(noteTypeList, noteTypeNames, addNoteType);
-    for(var i = 0; i < buttons.length; i ++)
-    {
-        buttons[i].noteTypePath = noteTypes[i];
-    }
-    showDialogue("addNoteTypeDialogue");
+    readFile("note-type-list.txt", function(content) {
+        var noteTypes = content.trim().split("\n");
+        var noteTypeNames = [];
+        for(var path of noteTypes)
+        {
+            var name = getNoteTypeNameFromPath(path);
+            noteTypeNames.push(name);
+        }
+        var buttons = populateButtonList(noteTypeList, noteTypeNames,
+                                         addNoteType);
+        for(var i = 0; i < buttons.length; i ++)
+        {
+            buttons[i].noteTypePath = noteTypes[i];
+        }
+        showDialogue("addNoteTypeDialogue");
+    });
 }
 
 function addNoteType(event)
@@ -273,7 +284,7 @@ function enterMode(newMode)
     {
         mainSheet.canvas.style.cursor = "crosshair";
     }
-    if(mode == RESIZE)
+    else if(mode == RESIZE)
     {
         mainSheet.canvas.style.cursor = "ew-resize";
     }
@@ -339,10 +350,12 @@ function playClick()
 function showImportDialogue()
 {
     var scoreList = document.getElementById("dialogueScoreList");
-    var scores = readFile("score-list.txt").trim().split("\n");
-    populateButtonList(scoreList, scores, selectImportScore);
-    importSheet.draw();
-    var dialogue = showDialogue("importDialogue");
+    readFile("score-list.txt", function(content) {
+        scores = content.trim().split("\n");
+        populateButtonList(scoreList, scores, selectImportScore);
+        importSheet.draw();
+        var dialogue = showDialogue("importDialogue");
+    });
 }
 
 function clearChildren(node)
@@ -374,8 +387,9 @@ function populateButtonList(listElement, items, onClickFunction, ...args)
 function selectImportScore(event)
 {
     var scoreName = event.target.innerHTML;
-    var score = readScoreFromFile(scoreName);
-    loadImportScore(score);
+    var score = readScoreFromFile(
+        scoreName,
+        function(score) {loadImportScore(score);});
 }
 
 function loadImportScore(score)
