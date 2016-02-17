@@ -21,8 +21,9 @@ function WebAudioApiPlayer()
         request.responseType = 'arraybuffer';
         request.onload = function()
         {
-            context.decodeAudioData(request.response).
-                then(function(buffer) {buffers[index] = buffer;});
+            context.decodeAudioData(
+                request.response,
+                function(buffer) {buffers[index] = buffer;});
         }
         request.send();
     }
