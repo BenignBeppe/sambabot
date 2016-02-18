@@ -1,7 +1,6 @@
 function WebAudioApiPlayer()
 {
     var context = new AudioContext();;
-    var myAudioBuffer = null;
     var buffers = [];
     var sources = [];
 
