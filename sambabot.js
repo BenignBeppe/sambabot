@@ -25,6 +25,8 @@ var playing = false;
 var recording = false;
 var audioPlayer;
 var donePlayingTimeout;
+var startBeat = 1;
+var endBeat = 0;
 
 function onLoad()
 {
@@ -34,6 +36,12 @@ function onLoad()
     loadScoreFromParameters();
     saveUndoState();
     clickSound = new Audio("sounds/repinique-head.ogg");
+    var startInput = document.getElementById("startInput");
+    startInput.addEventListener(
+        "input", function(e) {setStartBeat(parseInt(e.target.value));}, false);
+    var endInput = document.getElementById("endInput");
+    endInput.addEventListener(
+        "input", function(e) {setEndBeat(parseInt(e.target.value));}, false);
     var beatsInput = document.getElementById("beatsInput");
     beatsInput.addEventListener("input", updateBeats, false);
     beatsInput.value = mainSheet.score.beats;
@@ -48,22 +56,6 @@ function onLoad()
     importSheet = new ImportSheet(
         document.getElementById("importScoreCanvas"));
     updateNoteTypeButtons();
-}
-
-function loadJsonFromRepresentation()
-{
-    var score = JSON.parse(jsonRepresentation.value);
-    loadScore(score, false);
-}
-
-function loadImportScoreFromUrl()
-{
-    var urlInput = document.getElementById("importScoreUrlInput");
-    var url = urlInput.value;
-    readFile(url, function(content) {
-        var score = JSON.parse(content);
-        loadImportScore(score);
-    });
 }
 
 function loadScoreFromParameters()
@@ -96,6 +88,8 @@ function loadScore(score, shouldJsonUpdate)
     mainSheet.changeScore(score);
     beatsInput.value = mainSheet.score.beats;
     bpmInput.value = mainSheet.score.bpm;
+    setStartBeat(1);
+    setEndBeat(0);
     if(shouldJsonUpdate || shouldJsonUpdate == null)
     {
         updateJson();
@@ -253,6 +247,23 @@ function addNoteType(event)
     mainSheet.addNoteType(path);
 }
 
+
+function loadJsonFromRepresentation()
+{
+    var score = JSON.parse(jsonRepresentation.value);
+    loadScore(score, false);
+}
+
+function loadImportScoreFromUrl()
+{
+    var urlInput = document.getElementById("importScoreUrlInput");
+    var url = urlInput.value;
+    readFile(url, function(content) {
+        var score = JSON.parse(content);
+        loadImportScore(score);
+    });
+}
+
 function toggleMode(newMode)
 {
     if(newMode == mode)
@@ -326,15 +337,14 @@ function updateModeButtonStates()
 function play(looping)
 {
     stop();
+    var endTime = toSeconds(endBeat + 1 - startBeat) * 1000;
     if(looping)
     {
-        donePlayingTimeout = setTimeout(
-            play, toSeconds(mainSheet.score.beats) * 1000, true);
+        donePlayingTimeout = setTimeout(play, endTime, true);
     }
     else
     {
-        donePlayingTimeout = setTimeout(
-            stop, toSeconds(mainSheet.score.beats) * 1000);
+        donePlayingTimeout = setTimeout(stop, endTime);
     }
     startTime = Date.now();
     playing = true;
@@ -454,6 +464,33 @@ function closeDialogue()
     document.getElementById("overlay").style.visibility = "hidden";
     document.getElementById(shownDialogue).style.visibility = "hidden";
     shownDialogue = null;
+}
+
+function setStartBeat(value)
+{
+    startBeat = value;
+    startInput.value = value;
+    if(startBeat > endBeat)
+    {
+        setEndBeat(startBeat);
+    }
+}
+
+function setEndBeat(value)
+{
+    endInput.value = value;
+    if(value == 0)
+    {
+        endBeat = mainSheet.score.beats;
+    }
+    else
+    {
+        endBeat = value;
+        if(endBeat < startBeat)
+        {
+            setStartBeat(endBeat);
+        }
+    }
 }
 
 function updateBeats(event)

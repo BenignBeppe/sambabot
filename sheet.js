@@ -154,11 +154,6 @@ function Sheet(canvas)
         }
     }
 
-    this.calculateDuration = function()
-    {
-        return this.score.beats / this.score.bpm * 60;
-    }
-
     this.xInCanvas = function(rawX)
     {
         return rawX - this.canvas.offsetLeft +
@@ -187,11 +182,6 @@ function Sheet(canvas)
     {
         var time = x  * this.score.beats / this.canvas.width;
         return time;
-    }
-
-    this.calculateDuration = function()
-    {
-        return this.score.beats / this.score.bpm * 60;
     }
 
     this.getBeatContainingX = function(x)
@@ -328,6 +318,7 @@ function MainSheet(canvas)
                 this.drawNote(adjustedNote, IMPORT_COLOUR);
             }
         }
+        this.drawDisabledBeatsOverlays();
         this.drawTimeMarker();
     }
 
@@ -354,17 +345,40 @@ function MainSheet(canvas)
         this.drawLine(0, y, this.canvas.width, y, 1);
     }
 
+    this.drawDisabledBeatsOverlays = function()
+    {
+        this.context.beginPath();
+        this.context.rect(
+            this.timeToX(0),
+            0,
+            this.timeToX(startBeat - 1),
+            this.canvas.height);
+        this.context.rect(
+            this.timeToX(endBeat),
+            0,
+            this.timeToX(this.score.beats),
+            this.canvas.height);
+        this.context.fillStyle = "rgba(0, 0, 0, 0.15)";
+        this.context.fill();
+    }
+
     this.drawTimeMarker = function()
     {
-        var time = Date.now();
-        var x = (((time - startTime) / 1000.0) / this.calculateDuration()) *
-            this.canvas.width;
+        var secondsPlayed = (Date.now() - startTime) / 1000;
+        var beatsPlayed = this.secondsToBeats(secondsPlayed);
+        var x = ((beatsPlayed + startBeat - 1) / this.score.beats)
+            * this.canvas.width;
         this.context.strokeStyle = MAIN_COLOUR;
         this.drawLine(x, 0, x, this.canvas.height, 2);
         if(playing)
         {
             this.scrollToCenterX(x);
         }
+    }
+
+    this.secondsToBeats = function(seconds)
+    {
+        return seconds * this.score.bpm / 60;
     }
 
     this.scrollToCenterX = function(x)

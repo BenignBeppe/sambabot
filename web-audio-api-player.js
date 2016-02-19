@@ -31,14 +31,17 @@ function WebAudioApiPlayer()
     {
         for(var note of mainSheet.score.notes)
         {
-            this.playNote(note);
+            if(note.time >= startBeat - 1 && note.time < endBeat)
+            {
+                this.playNote(note);
+            }
         }
     }
 
     this.playNote = function(note)
     {
         var buffer = buffers[note.type];
-        var delay = toSeconds(note.time);
+        var delay = toSeconds(note.time - (startBeat - 1));
         var source = context.createBufferSource();
         source.buffer = buffer;
         source.connect(context.destination);
