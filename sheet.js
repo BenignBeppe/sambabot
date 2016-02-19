@@ -373,6 +373,13 @@ function MainSheet(canvas)
             x - this.canvas.parentElement.clientWidth / 2;
     }
 
+    this.superDeselectNotes = this.deselectNotes;
+    this.deselectNotes = function()
+    {
+        this.superDeselectNotes();
+        this.highlightedNoteLine = null;
+    }
+
     this.mouseMove = function(event)
     {
         var x = this.xInCanvas(event.clientX);
