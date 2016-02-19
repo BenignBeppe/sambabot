@@ -123,7 +123,6 @@ function readFile(path, callback)
         callback(content);
     };
     request.send();
-    return content;
 }
 
 function saveUndoState()
@@ -224,7 +223,7 @@ function changeNoteType(event, noteTypeIndex)
 {
     mainSheet.changeNoteType(noteTypeIndex[0], event.target.noteTypePath);
     closeDialogue();
-    this.audioPlayer.updateSounds();
+    audioPlayer.updateSounds();
 }
 
 function showAddNoteTypeDialogue(event)
@@ -271,15 +270,17 @@ function exitMode()
     console.log("Exiting mode:", mode)
     mode = null;
     mainSheet.canvas.style.cursor = "default";
+    updateModeButtonStates();
 }
 
 function enterMode(newMode)
 {
+    exitMode();
     console.log("Entering mode:", newMode)
     mode = newMode;
     if(mode == ADD_NOTE || mode == REMOVE_NOTE)
     {
-        this.mainSheet.deselectNotes();
+        mainSheet.deselectNotes();
     }
     if(mode == ADD_NOTE)
     {
@@ -292,6 +293,33 @@ function enterMode(newMode)
     else
     {
         mainSheet.canvas.style.cursor = "default";
+    }
+    updateModeButtonStates();
+}
+
+function updateModeButtonStates()
+{
+    var buttons = document.getElementsByClassName("modeButton");
+    for(var button of buttons)
+    {
+        button.classList.remove("down");
+    }
+    var downButton;
+    if(mode == ADD_NOTE)
+    {
+        downButton = document.getElementById("addNoteButton");
+    }
+    else if(mode == REMOVE_NOTE)
+    {
+        downButton = document.getElementById("removeNoteButton");
+    }
+    else if(mode == RESIZE)
+    {
+        downButton = document.getElementById("resizeButton");
+    }
+    if(downButton != null)
+    {
+        downButton.classList.add("down");
     }
 }
 
@@ -417,7 +445,7 @@ function importScore()
 function importNotes()
 {
     closeDialogue();
-    copiedNotes = this.importSheet.selectedNotes;
+    copiedNotes = importSheet.selectedNotes;
     pasteNotes();
 }
 
@@ -496,7 +524,7 @@ function undo()
 
 function copyNotes()
 {
-    copiedNotes = this.mainSheet.selectedNotes;
+    copiedNotes = mainSheet.selectedNotes;
 }
 
 function pasteNotes()
