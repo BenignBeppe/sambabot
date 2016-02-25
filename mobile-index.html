@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="sambabot.js"></script>
+    <script src="sheet.js"></script>
+    <script src="web-audio-api-player.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  </head>
+  <body onload="onLoad()">
+    <div style="display: flex;">
+      <div class="scrollDiv">
+        <canvas id="mainScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+      </div>
+      <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
+    </div>
+    <div>
+      <button id="playButton" onclick="play()"><i class="fa fa-play"></i></button>
+      <input id="startInput" type="number" min="1" style="width: 4em" />
+      <input id="endInput" type="number" min="0" style="width: 4em" />
+      <button id="loopButton" onclick="play(true)"><i class="fa fa-refresh"></i></button>
+      <button id="stopButton" onclick="stop()"><i class="fa fa-stop"></i></button>
+      <button id="recordButton" onclick="record()"><i class="fa fa-circle"></i></button>
+      <input id="animateCheckbox" type="checkbox" onchange="toggleAnimate(event)" checked="checked" />Animate
+    </div>
+    <div>
+      <button id="addNoteButton" onclick="toggleMode(ADD_NOTE)" class="modeButton"><i class="fa fa-plus"></i></button>
+      <button id="removeNoteButton" onclick="toggleMode(REMOVE_NOTE)" class="modeButton"><i class="fa fa-minus"></i></button>
+      <button id="resizeButton" onclick="toggleMode(RESIZE)" class="modeButton"><i class="fa fa-arrows-h"></i></button>
+    </div>
+    <div>
+      Beats: <input id="beatsInput" type="number" min="1" style="width: 4em" />
+      BPM: <input id="bpmInput" type="number" min="1" style="width: 4em" />
+    </div>
+    <div>
+      <button onclick="showImportDialogue()"><i class="fa fa-download"></i>&nbsp;Import</button>
+    </div>
+    <div>
+      <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
+      <button id="loadJsonButton" onclick="loadJsonFromRepresentation()">Load</button>
+    </div>
+    <div id="overlay" class="overlay"></div>
+    <div id="importDialogue" class="popup">
+      <h1>Import</h1>
+      <div class="scrollDiv">
+        <canvas id="importScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+      </div>
+      <h2>Select score to import from</h2>
+      URL: <input id="importScoreUrlInput" type="text" /><button onclick="loadImportScoreFromUrl()">Load</button>
+      <ul id="dialogueScoreList" class="buttonList"></ul>
+      <br />
+      <button onclick="importScore()" title="Import entire score, replacing the current one."><i class="fa fa-download"></i>&nbsp;Import score</button>
+      <button onclick="importNotes()" title="Import notes selected in the sheet above. After the dialogue closes, select where in the score you want to place the imported notes."><i class="fa fa-square-o"></i>&nbsp;Import selected notes</button>
+      <button onclick="closeDialogue()" title="Close dialogue without importing anything."><i class="fa fa-close"></i>&nbsp;Cancel</button>
+    </div>
+    <div id="editNoteTypeDialogue" class="popup">
+      <h1>Edit Note Type</h1>
+      <h2 id="editNoteTypeName"></h2>
+      URL: <input id="editNoteTypeUrl" type="text" /><button onclick="loadNoteTypeFromUrl()">Load</button>
+      <ul id="editNoteTypeList" class="buttonList"></ul>
+      <br />
+      <button onclick="closeDialogue()" title="Close dialogue without changing anything."><i class="fa fa-close"></i>&nbsp;Cancel</button>
+    </div>
+    <div id="addNoteTypeDialogue" class="popup">
+      <h1>Add Note Type</h1>
+      URL: <input id="addNoteTypeUrl" type="text" /><button onclick="loadNoteTypeFromUrl()">Load</button>
+      <ul id="addNoteTypeList" class="buttonList"></ul>
+      <br />
+      <button onclick="closeDialogue()"><i class="fa fa-close"></i>&nbsp;Close</button>
+    </div>
+    Uses Font Awesome by Dave Gandy - <a href="http://fontawesome.io" target="_blank">http://fontawesome.io</a>
+  </body>
+</html>

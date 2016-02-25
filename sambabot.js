@@ -30,6 +30,7 @@ var endBeat = 0;
 
 function onLoad()
 {
+    mobile = isMobile();
     jsonRepresentation = document.getElementById("jsonRepresentation");
     mainSheet = new MainSheet(document.getElementById("mainScoreCanvas"));
     audioPlayer = new WebAudioApiPlayer();
@@ -142,6 +143,11 @@ function toggleAnimate(event)
     updateAnimate(event.target.checked);
 }
 
+function isMobile()
+{
+    return location.pathname.match(/[^\/]+$/)[0] == "mobile-index.html";
+}
+
 function updateNoteTypeButtons()
 {
     var noteTypeList = document.getElementById("noteTypeList");
@@ -154,6 +160,14 @@ function updateNoteTypeButtons()
         {
             var name = getNoteTypeNameFromPath(path);
             noteTypeNames.push(name);
+        }
+        if(mobile)
+        {
+            noteTypeNames = [];
+            for(var i in mainSheet.score.noteTypes)
+            {
+                noteTypeNames.push(i);
+            }
         }
         var buttons = populateButtonList(
             noteTypeList, noteTypeNames,
@@ -515,8 +529,9 @@ function keyDown(event)
     {
         if(event.key in recordKeys && !recordKeys[event.key].down)
         {
-            var time = ((Date.now() - startTime) / 1000) /
-                mainSheet.calculateDuration() * mainSheet.score.beats;
+            var secondsPlayed = (Date.now() - startTime) / 1000;
+            var beatsPlayed = mainSheet.secondsToBeats(secondsPlayed);
+            var time = (beatsPlayed + startBeat - 1)
             var note = {time: time, type: recordKeys[event.key].noteType};
             mainSheet.addNote(note);
             recordKeys[event.key].down = true;
