@@ -281,7 +281,7 @@ function exitMode()
 {
     console.log("Exiting mode:", mode)
     mode = null;
-    mainSheet.canvas.style.cursor = "default";
+    mainSheet.area.style.cursor = "default";
     updateModeButtonStates();
 }
 
@@ -296,15 +296,15 @@ function enterMode(newMode)
     }
     if(mode == ADD_NOTE)
     {
-        mainSheet.canvas.style.cursor = "crosshair";
+        mainSheet.area.style.cursor = "crosshair";
     }
     else if(mode == RESIZE)
     {
-        mainSheet.canvas.style.cursor = "ew-resize";
+        mainSheet.area.style.cursor = "ew-resize";
     }
     else
     {
-        mainSheet.canvas.style.cursor = "default";
+        mainSheet.area.style.cursor = "default";
     }
     updateModeButtonStates();
 }
@@ -312,8 +312,9 @@ function enterMode(newMode)
 function updateModeButtonStates()
 {
     var buttons = document.getElementsByClassName("modeButton");
-    for(var button of buttons)
+    for(var i = 0; i < buttons.length; i ++)
     {
+        var button = buttons.item(i);
         button.classList.remove("down");
     }
     var downButton;
