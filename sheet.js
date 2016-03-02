@@ -3,108 +3,30 @@ var HIGHLIGHT_COLOUR = "rgb(255, 0, 0)";
 var IMPORT_COLOUR = "rgb(0, 255, 255)";
 var BEAT_WIDTH = 100;
 
-function Sheet(canvas)
+function Sheet(area)
 {
-    this.canvas = canvas;
-    this.context = this.canvas.getContext("2d");
-    this.score = {beats: 4, bpm: 90, noteTypes: [], notes: []};
+    this.area = area;
     this.highlightedBeat;
     this.selectionStartPoint;
     this.selectedNotes = [];
     this.clickedNote;
     this.highlightedNote;
-
-    this.draw = function()
-    {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawNoteLines();
-        this.drawBeatLines();
-        this.drawNotes();
-        this.drawSelectionRectangle();
-    }
-
-    this.drawNoteLines = function()
-    {
-        for(var i = 0; i < this.numberOfNoteTypes(); i ++)
-        {
-            this.drawNoteLine(i);
-        }
-    }
+    this.layers = {
+        "grid": new GridLayer(this, this.area),
+        "note": new NoteLayer(this, this.area),
+        "selection": new SelectionLayer(this, this.area)};
+    this.isMain = false;
 
     this.numberOfNoteTypes = function()
     {
         return Object.keys(this.score.noteTypes).length
     }
 
-    this.drawNoteLine = function(index)
-    {
-        y = this.calculateNoteTypeY(index);
-        this.context.strokeStyle = MAIN_COLOUR;
-        this.drawLine(0, y, this.canvas.width, y, 1);
-    }
-
     this.calculateNoteTypeY = function(noteType)
     {
-        var gapSize = this.canvas.height / (this.numberOfNoteTypes() + 1);
+        var gapSize = this.area.clientHeight /
+            (this.numberOfNoteTypes() + 1);
         return gapSize * (noteType + 1);
-    }
-
-    this.drawLine = function(startX, startY, endX, endY, width)
-    {
-        this.context.beginPath();
-        this.context.lineWidth = width;
-        this.context.moveTo(startX, startY);
-        this.context.lineTo(endX, endY);
-        this.context.stroke();
-    }
-
-    this.drawBeatLines = function()
-    {
-        this.context.strokeStyle = MAIN_COLOUR;
-        for(var i = 1; i < this.score.beats; i ++)
-        {
-            this.drawBeatLine(i);
-        }
-    }
-
-    this.drawBeatLine = function(index)
-    {
-        var x = (this.canvas.width / (this.score.beats / index));
-        this.drawLine(x, 0, x, this.canvas.height, 1);
-    }
-
-    this.drawNotes = function()
-    {
-        for(var note of this.score.notes)
-        {
-            if(this.highlightedNote == note)
-            {
-                var x = this.calculateNoteX(note);
-                var y = this.calculateNoteY(note);
-                this.context.strokeStyle = HIGHLIGHT_COLOUR;
-                this.strokeCircle(x, y, NOTE_SIZE, 3);
-            }
-            if(this.selectedNotes.indexOf(note) != -1)
-            {
-                this.drawNote(note, HIGHLIGHT_COLOUR);
-            }
-            else
-            {
-                this.drawNote(note);
-            }
-        }
-    }
-
-    this.drawNote = function(note, colour)
-    {
-        if(colour == null)
-        {
-            colour = MAIN_COLOUR;
-        }
-        this.context.fillStyle = colour;
-        var x = this.calculateNoteX(note);
-        var y = this.calculateNoteY(note);
-        this.fillCircle(x, y, NOTE_SIZE);
     }
 
     this.calculateNoteX = function(note)
@@ -115,7 +37,7 @@ function Sheet(canvas)
 
     this.timeToX = function(time)
     {
-        var x = time / this.score.beats * this.canvas.width;
+        var x = time / this.score.beats * this.area.clientWidth;
         return x;
     }
 
@@ -124,77 +46,21 @@ function Sheet(canvas)
         return this.calculateNoteTypeY(note.type);
     }
 
-    this.strokeCircle = function(x, y, r, width)
-    {
-        this.context.beginPath();
-        this.context.arc(x, y, r, 0, 2 * Math.PI);
-        this.context.lineWidth = width;
-        this.context.stroke();
-    }
-
-    this.fillCircle = function(x, y, r)
-    {
-        this.context.beginPath();
-        this.context.arc(x, y, r, 0, 2 * Math.PI);
-        this.context.fill();
-    }
-
-    this.drawSelectionRectangle = function()
-    {
-        if(this.selectionStartPoint != null)
-        {
-            this.context.beginPath();
-            this.context.lineWidth = 1;
-            this.context.rect(
-                this.selectionStartPoint.x,
-                this.selectionStartPoint.y,
-                this.selectionEndPoint.x - this.selectionStartPoint.x,
-                this.selectionEndPoint.y - this.selectionStartPoint.y);
-            this.context.stroke();
-        }
-    }
-
-    this.xInCanvas = function(rawX)
-    {
-        return rawX - this.canvas.offsetLeft +
-            this.canvas.parentElement.scrollLeft + document.body.scrollLeft;
-    }
-
-    this.yInCanvas = function(rawY)
-    {
-        return rawY - this.canvas.offsetTop + document.body.scrollTop;
-    }
-
     this.calculateNoteTime = function(x)
     {
-        return (x / this.canvas.width) * this.score.beats;
-    }
-
-    this.moveSelectedNotes = function(deltaX)
-    {
-        for(var note of this.selectedNotes)
-        {
-            this.moveNote(note, deltaX);
-        }
+        return (x / this.area.clientWidth) * this.score.beats;
     }
 
     this.xToTime = function(x)
     {
-        var time = x  * this.score.beats / this.canvas.width;
+        var time = x  * this.score.beats / this.area.clientWidth;
         return time;
-    }
-
-    this.getBeatContainingX = function(x)
-    {
-        var time = this.xToTime(x);
-        var beat = Math.floor(time);
-        return beat;
     }
 
     this.startSelection = function(event)
     {
-        var x = this.xInCanvas(event.clientX);
-        var y = this.yInCanvas(event.clientY);
+        var x = event.layerX;
+        var y = event.layerY;
         this.clickedNote = this.withinNote(x, y);
         if(this.clickedNote != null)
         {
@@ -213,6 +79,7 @@ function Sheet(canvas)
             this.selectionStartPoint = {x: x, y: y};
             this.selectionEndPoint = {x: x, y: y};
         }
+        this.layers.note.draw();
     }
 
     this.withinNote = function(x, y)
@@ -239,23 +106,30 @@ function Sheet(canvas)
 
     this.selectNotesInRectangle = function()
     {
-        var firstNoteTime = null;
-        for(var note of this.score.notes)
+        if(this.selectionStartPoint != null)
         {
-            var x = this.calculateNoteX(note);
-            var y = this.calculateNoteY(note);
-            var minX = Math.min(this.selectionStartPoint.x,
-                                this.selectionEndPoint.x);
-            var maxX = Math.max(this.selectionStartPoint.x,
-                                this.selectionEndPoint.x);
-            var minY = Math.min(this.selectionStartPoint.y,
-                                this.selectionEndPoint.y);
-            var maxY = Math.max(this.selectionStartPoint.y,
-                                this.selectionEndPoint.y);
-            if(x > minX && x < maxX && y > minY && y < maxY)
+            var firstNoteTime = null;
+            for(var note of this.score.notes)
             {
-                this.selectNote(note);
+                var x = this.calculateNoteX(note);
+                var y = this.calculateNoteY(note);
+                var minX = Math.min(this.selectionStartPoint.x,
+                                    this.selectionEndPoint.x);
+                var maxX = Math.max(this.selectionStartPoint.x,
+                                    this.selectionEndPoint.x);
+                var minY = Math.min(this.selectionStartPoint.y,
+                                    this.selectionEndPoint.y);
+                var maxY = Math.max(this.selectionStartPoint.y,
+                                    this.selectionEndPoint.y);
+                if(x > minX && x < maxX && y > minY && y < maxY)
+                {
+                    this.selectNote(note);
+                }
             }
+            this.selectionStartPoint = null;
+            this.selectionEndPoint = null;
+            this.layers.selection.clear();
+            this.layers.note.draw();
         }
     }
 
@@ -265,6 +139,7 @@ function Sheet(canvas)
         {
             this.selectionEndPoint.x = x;
             this.selectionEndPoint.y = y;
+            this.layers.selection.draw();
         }
         else
         {
@@ -285,95 +160,56 @@ function Sheet(canvas)
 
     this.updateWidth = function()
     {
-        this.canvas.width = this.score.beats * BEAT_WIDTH;
+        var width = this.score.beats * BEAT_WIDTH;
+        this.area.style.width = width + "px";
+        for(var layerName in this.layers)
+        {
+            var layer = this.layers[layerName];
+            layer.canvas.width = this.score.beats * BEAT_WIDTH;
+        }
+        this.layers.grid.draw();
+        this.layers.note.draw();
+        if(endInput.value == 0)
+        {
+            setEndBeat(0);
+        }
+        this.layers.playRange.draw();
     }
 }
 
-function MainSheet(canvas)
+function MainSheet(area)
 {
-    Sheet.call(this, canvas);
+    Sheet.call(this, area);
     this.highlightedNoteLine;
     this.notesMoved = false;
     this.beatHoveredOver;
-    this.canvas.sheet = this;
-    this.canvas.addEventListener("mousemove",
+    this.area.sheet = this;
+    this.isMain = true;
+    this.area.addEventListener("mousemove",
                                  function(e){this.sheet.mouseMove(e)},
                                  false);
-    this.canvas.addEventListener("mousedown",
+    this.area.addEventListener("mousedown",
                                  function(e){this.sheet.mouseDown(e)},
                                  false);
-    this.canvas.addEventListener("mouseup",
+    this.area.addEventListener("mouseup",
                                  function(e){this.sheet.mouseUp(e)},
                                  false);
+    this.layers["playRange"] = new PlayRangeLayer(this, this.area);
+    this.layers["timeMarker"] = new TimeMarkerLayer(this, this.area);
 
-    this.superDraw = this.draw;
-    this.draw = function()
+    this.superDeselectNotes = this.deselectNotes;
+    this.deselectNotes = function()
     {
-        this.superDraw();
-        if(pastedNotes.length > 0)
-        {
-            for(var note of pastedNotes)
-            {
-                var adjustedNote = this.adjustNote(note);
-                this.drawNote(adjustedNote, IMPORT_COLOUR);
-            }
-        }
-        this.drawDisabledBeatsOverlays();
-        this.drawTimeMarker();
+        this.superDeselectNotes();
+        this.highlightedNoteLine = null;
     }
 
     this.adjustNote = function(note)
     {
         var startBeat = Math.floor(this.getFirstNote(pastedNotes).time);
-        console.log("startBeat = " + startBeat);
         var adjustedTime = note.time - startBeat + this.beatHoveredOver;
         var adjustedNote = {time: adjustedTime, type: note.type}
         return adjustedNote;
-    }
-
-    this.drawNoteLine = function(index)
-    {
-        y = this.calculateNoteTypeY(index);
-        if(this.highlightedNoteLine == index)
-        {
-            this.context.strokeStyle = HIGHLIGHT_COLOUR;
-        }
-        else
-        {
-            this.context.strokeStyle = MAIN_COLOUR;
-        }
-        this.drawLine(0, y, this.canvas.width, y, 1);
-    }
-
-    this.drawDisabledBeatsOverlays = function()
-    {
-        this.context.beginPath();
-        this.context.rect(
-            this.timeToX(0),
-            0,
-            this.timeToX(startBeat - 1),
-            this.canvas.height);
-        this.context.rect(
-            this.timeToX(endBeat),
-            0,
-            this.timeToX(this.score.beats),
-            this.canvas.height);
-        this.context.fillStyle = "rgba(0, 0, 0, 0.15)";
-        this.context.fill();
-    }
-
-    this.drawTimeMarker = function()
-    {
-        var secondsPlayed = (Date.now() - startTime) / 1000;
-        var beatsPlayed = this.secondsToBeats(secondsPlayed);
-        var x = ((beatsPlayed + startBeat - 1) / this.score.beats)
-            * this.canvas.width;
-        this.context.strokeStyle = MAIN_COLOUR;
-        this.drawLine(x, 0, x, this.canvas.height, 2);
-        if(playing)
-        {
-            this.scrollToCenterX(x);
-        }
     }
 
     this.secondsToBeats = function(seconds)
@@ -383,21 +219,17 @@ function MainSheet(canvas)
 
     this.scrollToCenterX = function(x)
     {
-        this.canvas.parentElement.scrollLeft =
-            x - this.canvas.parentElement.clientWidth / 2;
-    }
-
-    this.superDeselectNotes = this.deselectNotes;
-    this.deselectNotes = function()
-    {
-        this.superDeselectNotes();
-        this.highlightedNoteLine = null;
+        this.area.parentElement.scrollLeft =
+            x - this.area.parentElement.clientWidth / 2;
     }
 
     this.mouseMove = function(event)
     {
-        var x = this.xInCanvas(event.clientX);
-        var y = this.yInCanvas(event.clientY);
+        var x = event.layerX;
+        var y = event.layerY;
+        var previouslyHighlightedNoteLine = this.highlightedNoteLine;
+        var previouslyHighlightedNote = this.highlightedNote;
+        var notesMoved = false;
         if(mode == ADD_NOTE)
         {
             this.highlightedNoteLine = this.closeToNoteLine(y);
@@ -418,6 +250,7 @@ function MainSheet(canvas)
                      (this.clickedNote.time - firstNoteTime));
                 this.moveNote(note, deltaX);
             }
+            notesMoved = true;
         }
         else if(this.selectedNotes.length > 0)
         {
@@ -425,21 +258,14 @@ function MainSheet(canvas)
             {
                 this.saveUndoStateBeforeNotesAreMoved();
                 this.moveSelectedNotes(event.movementX);
+                notesMoved = true;
             }
             else
             {
                 this.highlightedNoteLine = this.closeToNoteLine(y);
             }
         }
-        if(this.selectionStartPoint != null)
-        {
-            this.selectionEndPoint.x = x;
-            this.selectionEndPoint.y = y;
-        }
-        else
-        {
-            this.highlightedNote = this.withinNote(x, y);
-        }
+        this.updateSelection(x, y);
         if(this.highlightedNote == null)
         {
             this.beatHoveredOver = this.getBeatContainingX(x);
@@ -448,6 +274,15 @@ function MainSheet(canvas)
         {
             this.highlightedNoteLine = null;
         }
+        if(previouslyHighlightedNote != this.highlightedNote || notesMoved)
+        {
+            this.layers.note.draw();
+        }
+        if(previouslyHighlightedNoteLine != this.highlightedNoteLine)
+        {
+            this.layers.grid.draw();
+        }
+        this.layers.note.draw();
     }
 
     this.closeToNoteLine = function(y)
@@ -467,10 +302,17 @@ function MainSheet(canvas)
         return closestNoteLine;
     }
 
+    this.getBeatContainingX = function(x)
+    {
+        var time = this.xToTime(x);
+        var beat = Math.floor(time);
+        return beat;
+    }
+
     this.mouseDown = function(event)
     {
-        var x = this.xInCanvas(event.clientX);
-        var y = this.yInCanvas(event.clientY);
+        var x = event.layerX;
+        var y = event.layerY;
         if(mode == ADD_NOTE)
         {
             if(this.highlightedNoteLine == null)
@@ -480,7 +322,8 @@ function MainSheet(canvas)
             else
             {
                 var time = this.xToTime(x);
-                this.addNote({time: time, type: this.highlightedNoteLine});
+                var note = {time: time, type: this.highlightedNoteLine};
+                this.addNotes([note]);
             }
         }
         else if(mode == REMOVE_NOTE)
@@ -510,12 +353,16 @@ function MainSheet(canvas)
         }
     }
 
-    this.addNote = function(note)
+    this.addNotes = function(notes)
     {
         saveUndoState();
-        this.score.notes.push(note);
+        for(var note of notes)
+        {
+            this.score.notes.push(note);
+        }
         var path = this.score.noteTypes[note.type];
         updateJson();
+        this.layers.note.draw();
     }
 
     this.removeNotes = function(notes)
@@ -527,16 +374,19 @@ function MainSheet(canvas)
             this.score.notes.splice(index, 1);
         }
         updateJson();
+        this.layers.note.draw();
     }
 
     this.addPastedNotes = function()
     {
         var startBeat = Math.floor(this.getFirstNote(pastedNotes));
+        var notes = [];
         for(var note of pastedNotes)
         {
             var adjustedNote = this.adjustNote(note);
-            this.addNote(adjustedNote);
+            notes.push(adjustedNote);
         }
+        this.addNotes(notes);
     }
 
     this.getFirstNote = function(notes)
@@ -560,6 +410,7 @@ function MainSheet(canvas)
             note.type = noteType;
         }
         updateJson();
+        this.layers.note.draw();
     }
 
     this.saveUndoStateBeforeNotesAreMoved = function()
@@ -571,6 +422,14 @@ function MainSheet(canvas)
         }
     }
 
+    this.moveSelectedNotes = function(deltaX)
+    {
+        for(var note of this.selectedNotes)
+        {
+            this.moveNote(note, deltaX);
+        }
+    }
+
     this.moveNote = function(note, deltaX)
     {
         note.time += this.calculateNoteTime(deltaX);
@@ -578,12 +437,7 @@ function MainSheet(canvas)
 
     this.mouseUp = function(event)
     {
-        if(this.selectionStartPoint != null)
-        {
-            this.selectNotesInRectangle();
-            this.selectionStartPoint = null;
-            this.selectionEndPoint = null;
-        }
+        this.selectNotesInRectangle();
         if(this.notesMoved)
         {
             updateJson();
@@ -602,16 +456,16 @@ function MainSheet(canvas)
     {
         saveUndoState();
         this.score.noteTypes[noteTypeIndex] = newNoteType;
-        updateJson();
-        updateNoteTypeButtons();
+        this.layers.grid.draw();
+        this.layers.note.draw();
     }
 
     this.addNoteType = function(noteType)
     {
         saveUndoState();
         this.score.noteTypes.push(noteType);
-        updateJson();
-        updateNoteTypeButtons();
+        this.layers.grid.draw();
+        this.layers.note.draw();
     }
 
     this.setBeats = function(beats)
@@ -623,32 +477,29 @@ function MainSheet(canvas)
     }
 }
 
-function ImportSheet(canvas)
+function ImportSheet(area)
 {
-    Sheet.call(this, canvas);
-    this.canvas.sheet = this;
-    this.canvas.addEventListener("mousemove",
+    Sheet.call(this, area);
+    this.area.sheet = this;
+    this.area.addEventListener("mousemove",
                                  function(e){this.sheet.mouseMove(e)},
                                  false);
-    this.canvas.addEventListener("mousedown",
+    this.area.addEventListener("mousedown",
                                  function(e){this.sheet.mouseDown(e)},
                                  false);
-    this.canvas.addEventListener("mouseup",
+    this.area.addEventListener("mouseup",
                                  function(e){this.sheet.mouseUp(e)},
                                  false);
 
     this.mouseMove = function(event)
     {
-        var x = this.xInCanvas(event.clientX);
-        var y = this.yInCanvas(event.clientY);
+        var x = event.layerX;
+        var y = event.layerY;
         this.updateSelection(x, y);
-        this.draw();
     }
 
     this.mouseDown = function(event)
     {
-        var x = this.xInCanvas(event.clientX);
-        var y = this.yInCanvas(event.clientY);
         this.startSelection(event);
     }
 
@@ -657,24 +508,203 @@ function ImportSheet(canvas)
         if(this.selectionStartPoint != null)
         {
             this.selectNotesInRectangle();
-            this.selectionStartPoint = null;
-            this.selectionEndPoint = null;
+        }
+    }
+}
+
+function Layer(sheet, parent)
+{
+    this.canvas = document.createElement("canvas");
+    parent.appendChild(this.canvas);
+    this.canvas.classList.add("scoreCanvas");
+    this.canvas.height = parent.clientHeight;
+    this.context = this.canvas.getContext("2d");
+
+    this.draw = function() {}
+
+    this.clear = function()
+    {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    this.drawLine = function(startX, startY, endX, endY)
+    {
+        this.context.beginPath();
+        this.context.moveTo(startX, startY);
+        this.context.lineTo(endX, endY);
+        this.context.stroke();
+    }
+}
+
+function GridLayer(sheet, parent)
+{
+    Layer.call(this, sheet, parent);
+
+    this.draw = function()
+    {
+        this.clear();
+        this.drawNoteLines();
+        this.drawBeatLines();
+    }
+
+    this.drawNoteLines = function()
+    {
+        for(var i = 0; i < sheet.numberOfNoteTypes(); i ++)
+        {
+            this.drawNoteLine(i);
         }
     }
 
-    this.superXInCanvas = this.xInCanvas;
-    this.xInCanvas = function(rawX)
+    this.drawNoteLine = function(index)
     {
-        var dialogueOffset =
-            document.getElementById("importDialogue").offsetLeft;
-        return this.superXInCanvas(rawX) - dialogueOffset;
+        var y = sheet.calculateNoteTypeY(index);
+        if(sheet.highlightedNoteLine == index)
+        {
+            this.context.strokeStyle = HIGHLIGHT_COLOUR;
+        }
+        else
+        {
+            this.context.strokeStyle = MAIN_COLOUR;
+        }
+        this.drawLine(0, y, parent.clientWidth, y);
     }
 
-    this.superYInCanvas = this.yInCanvas;
-    this.yInCanvas = function(rawY)
+    this.drawBeatLines = function()
     {
-        var dialogueOffset =
-            document.getElementById("importDialogue").offsetTop;
-        return this.superYInCanvas(rawY) - dialogueOffset;
+        this.context.strokeStyle = MAIN_COLOUR;
+        for(var i = 1; i < sheet.score.beats; i ++)
+        {
+            this.drawBeatLine(i);
+        }
+    }
+
+    this.drawBeatLine = function(index)
+    {
+        var x = (parent.clientWidth / (sheet.score.beats / index));
+        this.drawLine(x, 0, x, parent.clientHeight);
+    }
+}
+
+function NoteLayer(sheet, parent)
+{
+    Layer.call(this, sheet, parent);
+
+    this.draw = function()
+    {
+        this.clear();
+        this.drawNotes();
+    }
+
+    this.drawNotes = function()
+    {
+        for(var note of sheet.score.notes)
+        {
+            this.drawNote(note);
+        }
+        if(sheet.isMain && pastedNotes.length > 0)
+        {
+            for(var note of pastedNotes)
+            {
+                var adjustedNote = sheet.adjustNote(note);
+                this.drawNote(adjustedNote, IMPORT_COLOUR);
+            }
+        }
+    }
+
+    this.drawNote = function(note, colour)
+    {
+        var x = sheet.calculateNoteX(note);
+        var y = sheet.calculateNoteY(note);
+        if(colour != null)
+        {
+            this.context.fillStyle = colour;
+        }
+        else if(sheet.selectedNotes.indexOf(note) != -1)
+        {
+            this.context.fillStyle = HIGHLIGHT_COLOUR;
+        }
+        else
+        {
+            this.context.fillStyle = MAIN_COLOUR;
+        }
+        this.fillCircle(x, y, NOTE_SIZE);
+        if(sheet.highlightedNote == note)
+        {
+            this.context.strokeStyle = HIGHLIGHT_COLOUR;
+            this.strokeCircle(x, y, NOTE_SIZE, 2);
+        }
+    }
+
+    this.strokeCircle = function(x, y, r, width)
+    {
+        this.context.beginPath();
+        this.context.arc(x, y, r, 0, 2 * Math.PI);
+        this.context.lineWidth = width;
+        this.context.stroke();
+    }
+
+    this.fillCircle = function(x, y, r)
+    {
+        this.context.beginPath();
+        this.context.arc(x, y, r, 0, 2 * Math.PI);
+        this.context.fill();
+    }
+}
+
+function SelectionLayer(sheet, parent)
+{
+    Layer.call(this, sheet, parent);
+
+    this.draw = function()
+    {
+        this.clear();
+        this.context.beginPath();
+        this.context.lineWidth = 1;
+        this.context.rect(
+            sheet.selectionStartPoint.x,
+            sheet.selectionStartPoint.y,
+            sheet.selectionEndPoint.x - sheet.selectionStartPoint.x,
+            sheet.selectionEndPoint.y - sheet.selectionStartPoint.y);
+        this.context.stroke();
+    }
+}
+
+function PlayRangeLayer(sheet, parent)
+{
+    Layer.call(this, sheet, parent);
+
+    this.draw = function()
+    {
+        this.clear();
+        this.context.beginPath();
+        this.context.rect(
+            0,
+            0,
+            sheet.timeToX(startBeat - 1),
+            parent.clientHeight);
+        this.context.rect(
+            sheet.timeToX(endBeat),
+            0,
+            sheet.timeToX(sheet.score.beats),
+            parent.clientHeight);
+        this.context.fillStyle = "rgba(0, 0, 0, 0.15)";
+        this.context.fill();
+    }
+}
+
+function TimeMarkerLayer(sheet, parent)
+{
+    Layer.call(this, sheet, parent);
+
+    this.draw = function()
+    {
+        this.clear();
+        var secondsPlayed = (Date.now() - startTime) / 1000;
+        var beatsPlayed = sheet.secondsToBeats(secondsPlayed);
+        var x = ((beatsPlayed + startBeat - 1) / sheet.score.beats)
+            * parent.clientWidth;
+        this.context.lineWidth = 2;
+        this.drawLine(x, 0, x, parent.clientHeight);
+        sheet.scrollToCenterX(x);
     }
 }

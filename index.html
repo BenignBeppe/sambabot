@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   </head>
   <body onload="onLoad()">
-    <div style="display: flex;">
+    <div class="flexDiv">
       <div class="scrollDiv">
-        <canvas id="mainScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+        <div id="mainSheet" class="sheetArea"></div>
       </div>
       <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
     </div>
@@ -21,7 +21,6 @@
       <button id="loopButton" onclick="play(true)"><i class="fa fa-refresh"></i>&nbsp;Play looped</button>
       <button id="stopButton" onclick="stop()"><i class="fa fa-stop"></i>&nbsp;Stop</button>
       <button id="recordButton" onclick="record()"><i class="fa fa-circle"></i>&nbsp;Record</button>
-      <input id="animateCheckbox" type="checkbox" onchange="toggleAnimate(event)" checked="checked" />Animate
     </div>
     <div>
       <button id="addNoteButton" onclick="toggleMode(ADD_NOTE)" class="modeButton"><i class="fa fa-plus"></i>&nbsp;Add note</button>
@@ -43,7 +42,7 @@
     <div id="importDialogue" class="popup">
       <h1>Import</h1>
       <div class="scrollDiv">
-        <canvas id="importScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+        <div id="importSheet" class="sheetArea"></div>
       </div>
       <h2>Select score to import from</h2>
       URL: <input id="importScoreUrlInput" type="text" /><button onclick="loadImportScoreFromUrl()">Load</button>

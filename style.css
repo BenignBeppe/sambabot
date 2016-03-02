@@ -1,11 +1,25 @@
+.flexDiv
+{
+    display: flex;
+}
+
 .scrollDiv
 {
     overflow-x: scroll;
+    position: relative;
+}
+
+.sheetArea
+{
+    height: 200px;
+    border: solid black 1px;
 }
 
 .scoreCanvas
 {
-    border: solid black 1px;
+    position: absolute;
+    left: 0;
+    top: 0;
 }
 
 .overlay
@@ -22,8 +36,9 @@
 .popup
 {
     position: absolute;
-    top: 50px;
-    left: 50px;
+    top: 5%;
+    left: 5%;
+    max-width: 90%;
     background: white;
     border: solid black 1px;
     visibility: hidden;

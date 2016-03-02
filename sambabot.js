@@ -20,7 +20,7 @@ var shownDialogue;
 var importSheet;
 var copiedNotes = [];
 var pastedNotes = [];
-var animateIntervalId;
+var requestAnimationId;
 var playing = false;
 var recording = false;
 var audioPlayer;
@@ -32,7 +32,8 @@ function onLoad()
 {
     mobile = isMobile();
     jsonRepresentation = document.getElementById("jsonRepresentation");
-    mainSheet = new MainSheet(document.getElementById("mainScoreCanvas"));
+    mainSheet = new MainSheet(document.getElementById("mainSheet"));
+    mainSheet.changeScore({beats: 4, bpm: 90, noteTypes: [], notes: []});
     audioPlayer = new WebAudioApiPlayer();
     loadScoreFromParameters();
     saveUndoState();
@@ -49,13 +50,12 @@ function onLoad()
     var bpmInput = document.getElementById("bpmInput");
     bpmInput.addEventListener("input", updateBpm, false);
     bpmInput.value = mainSheet.score.bpm;
-    var animateCheckbox = document.getElementById("animateCheckbox");
-    updateAnimate(animateCheckbox.checked);
     addEventListener("keydown", keyDown, false);
     addEventListener("keyup", keyUp, false);
     updateJson();
     importSheet = new ImportSheet(
-        document.getElementById("importScoreCanvas"));
+        document.getElementById("importSheet"));
+    importSheet.changeScore({beats: 4, bpm: 90, noteTypes: [], notes: []});
     updateNoteTypeButtons();
 }
 
@@ -97,7 +97,6 @@ function loadScore(score, shouldJsonUpdate)
     }
     audioPlayer.updateSounds();
     updateNoteTypeButtons()
-    mainSheet.draw();
 }
 
 function readScoreFromFile(scoreName, callback)
@@ -124,23 +123,6 @@ function saveUndoState()
 {
     undoHistory.push(JSON.parse(JSON.stringify(mainSheet.score)));
     console.log("Saving undo state. # of states now:", undoHistory.length);
-}
-
-function updateAnimate(animate)
-{
-    if(animate)
-    {
-        animateIntervalId = setInterval(draw, 1000 / FPS);
-    }
-    else
-    {
-        clearInterval(animateIntervalId);
-    }
-}
-
-function toggleAnimate(event)
-{
-    updateAnimate(event.target.checked);
 }
 
 function isMobile()
@@ -231,6 +213,8 @@ function changeNoteType(event, noteTypeIndex)
 {
     mainSheet.changeNoteType(noteTypeIndex[0], event.target.noteTypePath);
     closeDialogue();
+    updateJson();
+    updateNoteTypeButtons();
     audioPlayer.updateSounds();
 }
 
@@ -259,6 +243,9 @@ function addNoteType(event)
 {
     var path = event.target.noteTypePath;
     mainSheet.addNoteType(path);
+    updateJson();
+    updateNoteTypeButtons();
+    audioPlayer.updateSounds();
 }
 
 
@@ -363,6 +350,7 @@ function play(looping)
     startTime = Date.now();
     playing = true;
     audioPlayer.play(looping);
+    requestAnimationId = requestAnimationFrame(draw);
 }
 
 function toSeconds(timeInBeats)
@@ -377,6 +365,8 @@ function stop()
     startTime = null;
     playing = false;
     recording = false;
+    mainSheet.layers.timeMarker.clear();
+    cancelAnimationFrame(requestAnimationId);
 }
 
 function record()
@@ -406,7 +396,6 @@ function showImportDialogue()
     readFile("score-list.txt", function(content) {
         scores = content.trim().split("\n");
         populateButtonList(scoreList, scores, selectImportScore);
-        importSheet.draw();
         var dialogue = showDialogue("importDialogue");
     });
 }
@@ -448,7 +437,6 @@ function selectImportScore(event)
 function loadImportScore(score)
 {
     importSheet.changeScore(score);
-    importSheet.draw();
 }
 
 function showDialogue(id)
@@ -488,6 +476,7 @@ function setStartBeat(value)
     {
         setEndBeat(startBeat);
     }
+    mainSheet.layers.playRange.draw();
 }
 
 function setEndBeat(value)
@@ -505,6 +494,7 @@ function setEndBeat(value)
             setStartBeat(endBeat);
         }
     }
+    mainSheet.layers.playRange.draw();
 }
 
 function updateBeats(event)
@@ -531,9 +521,9 @@ function keyDown(event)
         {
             var secondsPlayed = (Date.now() - startTime) / 1000;
             var beatsPlayed = mainSheet.secondsToBeats(secondsPlayed);
-            var time = (beatsPlayed + startBeat - 1)
+            var time = beatsPlayed + startBeat - 1
             var note = {time: time, type: recordKeys[event.key].noteType};
-            mainSheet.addNote(note);
+            mainSheet.addNotes([note]);
             recordKeys[event.key].down = true;
         }
     }
@@ -559,6 +549,8 @@ function keyDown(event)
         {
             mainSheet.deselectNotes();
             pastedNotes = [];
+            mainSheet.layers.note.draw();
+            mainSheet.layers.grid.draw();
         }
     }
 }
@@ -594,5 +586,6 @@ function keyUp(event)
 
 function draw()
 {
-    mainSheet.draw();
+    mainSheet.layers.timeMarker.draw();
+    requestAnimationId = requestAnimationFrame(draw);
 }
