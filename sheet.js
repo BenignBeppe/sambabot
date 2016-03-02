@@ -169,11 +169,6 @@ function Sheet(area)
         }
         this.layers.grid.draw();
         this.layers.note.draw();
-        if(endInput.value == 0)
-        {
-            setEndBeat(0);
-        }
-        this.layers.playRange.draw();
     }
 }
 
@@ -202,6 +197,17 @@ function MainSheet(area)
     {
         this.superDeselectNotes();
         this.highlightedNoteLine = null;
+    }
+
+    this.superUpdateWidth = this.updateWidth;
+    this.updateWidth = function()
+    {
+        this.superUpdateWidth();
+        if(endInput.value == 0)
+        {
+            setEndBeat(0);
+        }
+        this.layers.playRange.draw();
     }
 
     this.adjustNote = function(note)
