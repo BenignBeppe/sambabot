@@ -11,9 +11,9 @@ var mode;
 var clickSound;
 var jsonRepresentation;
 var recordKeys = {
-    j: {noteType: 0, down: false},
-    k: {noteType: 1, down: false},
-    f: {noteType: 2, down: false}
+    KeyJ: {noteType: 0, down: false},
+    KeyK: {noteType: 1, down: false},
+    KeyF: {noteType: 2, down: false}
 }
 var undoHistory = [];
 var shownDialogue;
@@ -517,35 +517,35 @@ function keyDown(event)
 {
     if(recording)
     {
-        if(event.key in recordKeys && !recordKeys[event.key].down)
+        if(event.code in recordKeys && !recordKeys[event.code].down)
         {
             var secondsPlayed = (Date.now() - startTime) / 1000;
             var beatsPlayed = mainSheet.secondsToBeats(secondsPlayed);
             var time = beatsPlayed + startBeat - 1
-            var note = {time: time, type: recordKeys[event.key].noteType};
+            var note = {time: time, type: recordKeys[event.code].noteType};
             mainSheet.addNotes([note]);
-            recordKeys[event.key].down = true;
+            recordKeys[event.code].down = true;
         }
     }
     else
     {
-        if(event.key == "Delete")
+        if(event.code == "Delete")
         {
             mainSheet.removeSelectedNotes();
         }
-        else if(event.key == "z" && event.ctrlKey)
+        else if(event.code == "KeyZ" && event.ctrlKey)
         {
             undo();
         }
-        else if(event.key == "c" && event.ctrlKey)
+        else if(event.code == "KeyC" && event.ctrlKey)
         {
             copyNotes();
         }
-        else if(event.key == "v" && event.ctrlKey)
+        else if(event.code == "KeyV" && event.ctrlKey)
         {
             pasteNotes();
         }
-        else if(event.key == "Escape")
+        else if(event.code == "Escape")
         {
             mainSheet.deselectNotes();
             pastedNotes = [];
@@ -578,9 +578,9 @@ function pasteNotes()
 
 function keyUp(event)
 {
-    if(event.key in recordKeys)
+    if(event.code in recordKeys)
     {
-        recordKeys[event.key].down = false;
+        recordKeys[event.code].down = false;
     }
 }
 
