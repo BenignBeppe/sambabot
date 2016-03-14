@@ -486,16 +486,27 @@ function MainSheet(area)
     this.resetSelectedNotes = function()
     {
         this.setGhostForSelectedNotes(false);
+        this.setMutedForSelectedNotes(false);
     }
 
     this.setGhostForSelectedNotes = function(value)
+    {
+        this.setAttributeForSelectedNotes("ghost", value);
+    }
+
+    this.setMutedForSelectedNotes = function(value)
+    {
+        this.setAttributeForSelectedNotes("muted", value);
+    }
+
+    this.setAttributeForSelectedNotes = function(attribute, value)
     {
         if(this.selectedNotes.length > 0)
         {
             saveUndoState();
             for(var note of this.selectedNotes)
             {
-                note.ghost = value;
+                note[attribute] = value;
             }
             updateJson();
             this.layers.note.draw();
@@ -505,6 +516,11 @@ function MainSheet(area)
     this.ghostSelectedNotes = function()
     {
         this.setGhostForSelectedNotes(true);
+    }
+
+    this.muteSelectedNotes = function()
+    {
+        this.setMutedForSelectedNotes(true);
     }
 }
 
@@ -672,6 +688,13 @@ function NoteLayer(sheet, parent)
         if(note.ghost || sheet.highlightedNote == note)
         {
             this.strokeCircle(x, y, NOTE_SIZE, 2);
+        }
+        if(note.muted)
+        {
+            this.drawLine(x - NOTE_SIZE, y - NOTE_SIZE, x + NOTE_SIZE,
+                          y + NOTE_SIZE)
+            this.drawLine(x + NOTE_SIZE, y - NOTE_SIZE, x - NOTE_SIZE,
+                          y + NOTE_SIZE)
         }
     }
 

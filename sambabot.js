@@ -346,6 +346,11 @@ function ghostNotes()
     mainSheet.ghostSelectedNotes();
 }
 
+function muteNotes()
+{
+    mainSheet.muteSelectedNotes();
+}
+
 function play(looping)
 {
     stop();

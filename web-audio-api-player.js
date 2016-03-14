@@ -33,7 +33,8 @@ function WebAudioApiPlayer()
     {
         for(var note of mainSheet.score.notes)
         {
-            if(note.time >= startBeat - 1 && note.time < endBeat)
+            if(note.time >= startBeat - 1 && note.time < endBeat &&
+               !note.muted)
             {
                 this.playNote(note);
             }
