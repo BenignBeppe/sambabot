@@ -172,6 +172,17 @@ function Sheet(area)
         this.layers.grid.draw();
         this.layers.note.draw();
     }
+
+    this.scrollToCenterX = function(x)
+    {
+        this.area.parentElement.scrollLeft =
+            x - this.getCenterX();
+    }
+
+    this.getCenterX = function()
+    {
+        return this.area.parentElement.clientWidth / 2;
+    }
 }
 
 function MainSheet(area)
@@ -224,12 +235,6 @@ function MainSheet(area)
     this.secondsToBeats = function(seconds)
     {
         return seconds * this.score.bpm / 60;
-    }
-
-    this.scrollToCenterX = function(x)
-    {
-        this.area.parentElement.scrollLeft =
-            x - this.area.parentElement.clientWidth / 2;
     }
 
     this.mouseMove = function(event)
@@ -533,7 +538,11 @@ function MainSheet(area)
     this.zoom = function(level)
     {
         this.zoomLevel = level;
+        var centerTime = this.xToTime(this.area.parentElement.scrollLeft +
+                                      this.getCenterX());
         this.updateWidth();
+        var centerX = this.timeToX(centerTime);
+        this.scrollToCenterX(centerX);
     }
 
     this.zoomOut = function()
