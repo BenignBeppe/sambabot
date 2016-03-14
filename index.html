@@ -15,9 +15,14 @@
       <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
     </div>
     <div>
-      <button onclick="resetNotes()"><i class="fa fa-volume-up"></i>&nbsp;Reset notes</button>
-      <button onclick="ghostNotes()"><i class="fa fa-volume-down"></i>&nbsp;Ghost notes</button>
-      <button onclick="muteNotes()"><i class="fa fa-volume-off"></i>&nbsp;Mute notes</button>
+      <button onclick="mainSheet.zoomIn()"><i class="fa fa-search-plus"></i>&nbsp;Zoom in</button>
+      <button onclick="mainSheet.zoomOut()"><i class="fa fa-search-minus"></i>&nbsp;Zoom out</button>
+      <button onclick="mainSheet.resetZoom()"><i class="fa fa-search"></i>&nbsp;Reset zoom</button>
+    </div>
+    <div>
+      <button onclick="mainSheet.resetSelectedNotes()"><i class="fa fa-volume-up"></i>&nbsp;Reset notes</button>
+      <button onclick="mainSheet.ghostSelectedNotes()"><i class="fa fa-volume-down"></i>&nbsp;Ghost notes</button>
+      <button onclick="mainSheet.muteSelectedNotes()"><i class="fa fa-volume-off"></i>&nbsp;Mute notes</button>
     </div>
     <div>
       <button id="playButton" onclick="play()"><i class="fa fa-play"></i>&nbsp;Play</button>

@@ -336,21 +336,6 @@ function updateModeButtonStates()
     }
 }
 
-function resetNotes()
-{
-    mainSheet.resetSelectedNotes();
-}
-
-function ghostNotes()
-{
-    mainSheet.ghostSelectedNotes();
-}
-
-function muteNotes()
-{
-    mainSheet.muteSelectedNotes();
-}
-
 function play(looping)
 {
     stop();

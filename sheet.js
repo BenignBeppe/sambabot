@@ -2,6 +2,7 @@ var MAIN_COLOUR = "rgb(0, 0, 0)";
 var HIGHLIGHT_COLOUR = "rgb(255, 0, 0)";
 var IMPORT_COLOUR = "rgb(0, 255, 255)";
 var BEAT_WIDTH = 100;
+var ZOOM_INTERVAL = 0.1;
 
 function Sheet(area)
 {
@@ -16,6 +17,7 @@ function Sheet(area)
         "note": new NoteLayer(this, this.area),
         "selection": new SelectionLayer(this, this.area)};
     this.isMain = false;
+    this.zoomLevel = 1.0;
 
     this.numberOfNoteTypes = function()
     {
@@ -160,12 +162,12 @@ function Sheet(area)
 
     this.updateWidth = function()
     {
-        var width = this.score.beats * BEAT_WIDTH;
+        var width = this.score.beats * BEAT_WIDTH * this.zoomLevel;
         this.area.style.width = width + "px";
         for(var layerName in this.layers)
         {
             var layer = this.layers[layerName];
-            layer.canvas.width = this.score.beats * BEAT_WIDTH;
+            layer.canvas.width = width;
         }
         this.layers.grid.draw();
         this.layers.note.draw();
@@ -521,6 +523,27 @@ function MainSheet(area)
     this.muteSelectedNotes = function()
     {
         this.setMutedForSelectedNotes(true);
+    }
+
+    this.zoomIn = function()
+    {
+        this.zoom(this.zoomLevel + ZOOM_INTERVAL);
+    }
+
+    this.zoom = function(level)
+    {
+        this.zoomLevel = level;
+        this.updateWidth();
+    }
+
+    this.zoomOut = function()
+    {
+        this.zoom(this.zoomLevel - ZOOM_INTERVAL);
+    }
+
+    this.resetZoom = function()
+    {
+        this.zoom(1.0);
     }
 }
 
