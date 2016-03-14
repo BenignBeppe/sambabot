@@ -336,6 +336,16 @@ function updateModeButtonStates()
     }
 }
 
+function resetNotes()
+{
+    mainSheet.resetSelectedNotes();
+}
+
+function ghostNotes()
+{
+    mainSheet.ghostSelectedNotes();
+}
+
 function play(looping)
 {
     stop();

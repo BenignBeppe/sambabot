@@ -214,7 +214,8 @@ function MainSheet(area)
     {
         var startBeat = Math.floor(this.getFirstNote(pastedNotes).time);
         var adjustedTime = note.time - startBeat + this.beatHoveredOver;
-        var adjustedNote = {time: adjustedTime, type: note.type}
+        var adjustedNote = JSON.parse(JSON.stringify(note));
+        adjustedNote.time = adjustedTime
         return adjustedNote;
     }
 
@@ -481,6 +482,30 @@ function MainSheet(area)
         this.updateWidth();
         updateJson();
     }
+
+    this.resetSelectedNotes = function()
+    {
+        this.setGhostForSelectedNotes(false);
+    }
+
+    this.setGhostForSelectedNotes = function(value)
+    {
+        if(this.selectedNotes.length > 0)
+        {
+            saveUndoState();
+            for(var note of this.selectedNotes)
+            {
+                note.ghost = value;
+            }
+            updateJson();
+            this.layers.note.draw();
+        }
+    }
+
+    this.ghostSelectedNotes = function()
+    {
+        this.setGhostForSelectedNotes(true);
+    }
 }
 
 function ImportSheet(area)
@@ -624,19 +649,28 @@ function NoteLayer(sheet, parent)
         if(colour != null)
         {
             this.context.fillStyle = colour;
+            this.context.strokeStyle = colour;
         }
         else if(sheet.selectedNotes.indexOf(note) != -1)
         {
             this.context.fillStyle = HIGHLIGHT_COLOUR;
+            this.context.strokeStyle = HIGHLIGHT_COLOUR;
         }
         else
         {
             this.context.fillStyle = MAIN_COLOUR;
+            this.context.strokeStyle = MAIN_COLOUR;
         }
-        this.fillCircle(x, y, NOTE_SIZE);
         if(sheet.highlightedNote == note)
         {
             this.context.strokeStyle = HIGHLIGHT_COLOUR;
+        }
+        if(!note.ghost)
+        {
+            this.fillCircle(x, y, NOTE_SIZE);
+        }
+        if(note.ghost || sheet.highlightedNote == note)
+        {
             this.strokeCircle(x, y, NOTE_SIZE, 2);
         }
     }

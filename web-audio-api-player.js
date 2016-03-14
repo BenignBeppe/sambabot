@@ -1,3 +1,5 @@
+var GHOST_NOTE_VOLUME = 0.2;
+
 function WebAudioApiPlayer()
 {
     var context = new AudioContext();;
@@ -44,7 +46,17 @@ function WebAudioApiPlayer()
         var delay = toSeconds(note.time - (startBeat - 1));
         var source = context.createBufferSource();
         source.buffer = buffer;
-        source.connect(context.destination);
+        if(note.ghost)
+        {
+            var gainNode = context.createGain();
+            gainNode.gain.value = GHOST_NOTE_VOLUME;
+            source.connect(gainNode);
+            gainNode.connect(context.destination);
+        }
+        else
+        {
+            source.connect(context.destination);
+        }
         var time = context.currentTime;
         if(delay != null)
         {
