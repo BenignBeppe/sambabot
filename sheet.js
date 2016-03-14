@@ -642,8 +642,16 @@ function GridLayer(sheet, parent)
     this.drawBeatLines = function()
     {
         this.context.strokeStyle = MAIN_COLOUR;
-        for(var i = 1; i < sheet.score.beats; i ++)
+        for(var i = 0; i < sheet.score.beats; i ++)
         {
+            if(i % 4 == 0)
+            {
+                this.context.lineWidth = 2;
+            }
+            else
+            {
+                this.context.lineWidth = 1;
+            }
             this.drawBeatLine(i);
         }
     }
