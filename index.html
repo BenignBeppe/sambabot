@@ -9,7 +9,7 @@
   </head>
   <body onload="onLoad()">
     <div class="flexDiv">
-      <div class="scrollDiv">
+      <div id="mainSheetContainer" class="scrollDiv">
         <div id="mainSheet" class="sheetArea"></div>
       </div>
       <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
@@ -48,6 +48,7 @@
       <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
       <button id="loadJsonButton" onclick="loadJsonFromRepresentation()">Load</button>
     </div>
+    Uses Font Awesome by Dave Gandy - <a href="http://fontawesome.io" target="_blank">http://fontawesome.io</a>
     <div id="overlay" class="overlay"></div>
     <div id="importDialogue" class="popup">
       <h1>Import</h1>
@@ -77,6 +78,5 @@
       <br />
       <button onclick="closeDialogue()"><i class="fa fa-close"></i>&nbsp;Close</button>
     </div>
-    Uses Font Awesome by Dave Gandy - <a href="http://fontawesome.io" target="_blank">http://fontawesome.io</a>
   </body>
 </html>

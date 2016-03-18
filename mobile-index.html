@@ -9,11 +9,21 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   </head>
   <body onload="onLoad()">
-    <div style="display: flex;">
-      <div class="scrollDiv">
-        <canvas id="mainScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+    <div class="flexDiv">
+      <div id="mainSheetContainer" class="scrollDiv">
+        <div id="mainSheet" class="sheetArea"></div>
       </div>
       <ul id="noteTypeList" class="buttonList noteTypeList"></ul>
+    </div>
+    <div>
+      <button onclick="mainSheet.zoomIn()"><i class="fa fa-search-plus"></i></button>
+      <button onclick="mainSheet.zoomOut()"><i class="fa fa-search-minus"></i></button>
+      <button onclick="mainSheet.resetZoom()"><i class="fa fa-search"></i></button>
+    </div>
+    <div>
+      <button onclick="mainSheet.resetSelectedNotes()"><i class="fa fa-volume-up"></i></button>
+      <button onclick="mainSheet.ghostSelectedNotes()"><i class="fa fa-volume-down"></i></button>
+      <button onclick="mainSheet.muteSelectedNotes()"><i class="fa fa-volume-off"></i></button>
     </div>
     <div>
       <button id="playButton" onclick="play()"><i class="fa fa-play"></i></button>
@@ -22,7 +32,6 @@
       <button id="loopButton" onclick="play(true)"><i class="fa fa-refresh"></i></button>
       <button id="stopButton" onclick="stop()"><i class="fa fa-stop"></i></button>
       <button id="recordButton" onclick="record()"><i class="fa fa-circle"></i></button>
-      <input id="animateCheckbox" type="checkbox" onchange="toggleAnimate(event)" checked="checked" />Animate
     </div>
     <div>
       <button id="addNoteButton" onclick="toggleMode(ADD_NOTE)" class="modeButton"><i class="fa fa-plus"></i></button>
@@ -34,17 +43,18 @@
       BPM: <input id="bpmInput" type="number" min="1" style="width: 4em" />
     </div>
     <div>
-      <button onclick="showImportDialogue()"><i class="fa fa-download"></i>&nbsp;Import</button>
+      <button onclick="showImportDialogue()"><i class="fa fa-download"></i></button>
     </div>
     <div>
       <textarea id="jsonRepresentation" cols="50" rows="20"></textarea>
       <button id="loadJsonButton" onclick="loadJsonFromRepresentation()">Load</button>
     </div>
+    Uses Font Awesome by Dave Gandy - <a href="http://fontawesome.io" target="_blank">http://fontawesome.io</a>
     <div id="overlay" class="overlay"></div>
     <div id="importDialogue" class="popup">
       <h1>Import</h1>
       <div class="scrollDiv">
-        <canvas id="importScoreCanvas" class="scoreCanvas" width="400" height="200"></canvas>
+        <div id="importSheet" class="sheetArea"></div>
       </div>
       <h2>Select score to import from</h2>
       URL: <input id="importScoreUrlInput" type="text" /><button onclick="loadImportScoreFromUrl()">Load</button>
@@ -69,6 +79,5 @@
       <br />
       <button onclick="closeDialogue()"><i class="fa fa-close"></i>&nbsp;Close</button>
     </div>
-    Uses Font Awesome by Dave Gandy - <a href="http://fontawesome.io" target="_blank">http://fontawesome.io</a>
   </body>
 </html>
