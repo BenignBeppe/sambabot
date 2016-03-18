@@ -1,0 +1,65 @@
+{
+    "beats": 4,
+    "bpm": 90,
+    "noteTypes": [
+        "sounds/repinique-head.ogg"
+    ],
+    "notes": [
+        {
+            "time": 0.01256666666666672,
+            "type": 0
+        },
+        {
+            "time": 0.3419383806519453,
+            "type": 0,
+            "ghost": true
+        },
+        {
+            "time": 0.6675458464773923,
+            "type": 0,
+            "ghost": true
+        },
+        {
+            "time": 0.9950354363827548,
+            "type": 0
+        },
+        {
+            "time": 1.2960613038906417,
+            "type": 0,
+            "ghost": true
+        },
+        {
+            "time": 1.6180185068349109,
+            "type": 0,
+            "ghost": true
+        },
+        {
+            "time": 1.9831505783385912,
+            "type": 0
+        },
+        {
+            "time": 2.3012295478443754,
+            "type": 0,
+            "ghost": true
+        },
+        {
+            "time": 2.638129758149319,
+            "type": 0,
+            "ghost": true
+        },
+        {
+            "time": 2.9957333333333325,
+            "type": 0
+        },
+        {
+            "time": 3.3140691922368717,
+            "type": 0,
+            "ghost": true
+        },
+        {
+            "time": 3.670886871337179,
+            "type": 0,
+            "ghost": true
+        }
+    ]
+}

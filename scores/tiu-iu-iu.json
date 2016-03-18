@@ -1,0 +1,179 @@
+{
+    "beats": 9,
+    "bpm": 120,
+    "noteTypes": [
+        "sounds/repinique-rimshot.ogg",
+        "sounds/repinique-hand.ogg"
+    ],
+    "notes": [
+        {
+            "time": 0.01256666666666672,
+            "type": 0,
+            "muted": true
+        },
+        {
+            "time": 0.3419383806519453,
+            "type": 0,
+            "ghost": true,
+            "muted": true
+        },
+        {
+            "time": 0.6675458464773923,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 0.9950354363827548,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 1.2960613038906417,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 1.6180185068349109,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 1.9831505783385912,
+            "type": 0,
+            "muted": true
+        },
+        {
+            "time": 2.3012295478443754,
+            "type": 0,
+            "ghost": true,
+            "muted": true
+        },
+        {
+            "time": 2.638129758149319,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 2.9957333333333325,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 3.3140691922368717,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 3.670886871337179,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 4.341938380651945,
+            "type": 0,
+            "ghost": true,
+            "muted": true
+        },
+        {
+            "time": 4.667545846477393,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 4.9950354363827545,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 5.2960613038906414,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 5.618018506834911,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 5.983150578338591,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 6.301229547844375,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 6.638129758149319,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 6.995733333333332,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 7.314069192236872,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 7.67088687133718,
+            "type": 0,
+            "ghost": false,
+            "muted": false
+        },
+        {
+            "time": 4.012566666666666,
+            "type": 0,
+            "muted": true
+        },
+        {
+            "time": 0.02,
+            "type": 1
+        },
+        {
+            "time": 1.99,
+            "type": 1
+        },
+        {
+            "time": 3.99,
+            "type": 1
+        },
+        {
+            "time": 6,
+            "type": 1
+        },
+        {
+            "time": 7,
+            "type": 1
+        },
+        {
+            "time": 7.99,
+            "type": 1
+        },
+        {
+            "time": 8,
+            "type": 0
+        }
+    ]
+}
