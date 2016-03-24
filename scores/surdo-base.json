@@ -1,0 +1,47 @@
+{
+    "beats": 4,
+    "bpm": 125,
+    "noteTypes": [
+        "sounds/surdo-1.ogg",
+        "sounds/surdo-2.ogg",
+        "sounds/surdo-3.ogg"
+    ],
+    "notes": [
+        {
+            "time": 0.01,
+            "type": 1
+        },
+        {
+            "time": 1,
+            "type": 0
+        },
+        {
+            "time": 2,
+            "type": 1
+        },
+        {
+            "time": 3,
+            "type": 0
+        },
+        {
+            "time": 1.0020000000000002,
+            "type": 2
+        },
+        {
+            "time": 1.488,
+            "type": 2
+        },
+        {
+            "time": 2.9915,
+            "type": 2
+        },
+        {
+            "time": 3.245941176470588,
+            "type": 2
+        },
+        {
+            "time": 3.761058823529412,
+            "type": 2
+        }
+    ]
+}

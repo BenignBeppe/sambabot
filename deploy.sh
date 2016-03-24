@@ -19,7 +19,7 @@ done
 echo === Generating lists ===
 ls -1B scores | sed -r "s/\.json//g" > $SCORE_LIST_PATH
 echo Generated $SCORE_LIST_PATH with $(wc -l $SCORE_LIST_PATH | egrep -o "^[0-9]+") scores.
-find sounds -type f > $NOTE_TYPE_LIST_PATH
+find sounds -type f | sort > $NOTE_TYPE_LIST_PATH
 echo Generated $NOTE_TYPE_LIST_PATH with $(wc -l $NOTE_TYPE_LIST_PATH | egrep -o "^[0-9]+") note type sounds.
 
 if [ $ONLY_GENERATE = 0 ]
