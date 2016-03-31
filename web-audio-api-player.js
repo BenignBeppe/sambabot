@@ -41,10 +41,17 @@ function WebAudioApiPlayer()
         }
     }
 
-    this.playNote = function(note)
+    this.playNote = function(note, playNow)
     {
         var buffer = buffers[note.type];
-        var delay = toSeconds(note.time - (startBeat - 1));
+        if(playNow)
+        {
+            var delay = null;
+        }
+        else
+        {
+            var delay = toSeconds(note.time - (startBeat - 1));
+        }
         var source = context.createBufferSource();
         source.buffer = buffer;
         if(note.ghost)

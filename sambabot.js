@@ -526,6 +526,7 @@ function keyDown(event)
             var note = {time: time, type: recordKeys[event.code].noteType};
             mainSheet.addNotes([note]);
             recordKeys[event.code].down = true;
+            this.audioPlayer.playNote(note, true);
         }
     }
     else
