@@ -628,6 +628,7 @@ function GridLayer(sheet, parent)
 
     this.drawNoteLines = function()
     {
+        this.context.lineWidth = 1;
         for(var i = 0; i < sheet.numberOfNoteTypes(); i ++)
         {
             this.drawNoteLine(i);
